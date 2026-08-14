@@ -1,0 +1,965 @@
+/* ================================================================
+   CYBERSEC HACKER THEME — cyber.css
+   Matrix Green #00FF41 | Cyan #00C2FF | Dark #000000
+   Fonts: Orbitron (headings) | Share Tech Mono (terminal)
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ----------------------------------------------------------------
+   HACKER COLOR TOKENS
+   ---------------------------------------------------------------- */
+:root {
+  --hack-black:    #000000;
+  --hack-deep:     #020a02;
+  --hack-bg:       #030d03;
+  --hack-surface:  #0a1a0a;
+  --hack-panel:    #0d200d;
+  --hack-border:   #0f2b0f;
+
+  --hack-green:    #00FF41;
+  --hack-green-dim: #00cc33;
+  --hack-green-dark: #004d10;
+  --hack-green-glow: rgba(0, 255, 65, 0.2);
+  --hack-green-glow-sm: rgba(0, 255, 65, 0.08);
+
+  --hack-cyan:     #00C2FF;
+  --hack-cyan-dim: #0099cc;
+  --hack-cyan-glow: rgba(0, 194, 255, 0.2);
+
+  --hack-red:      #FF2D55;
+  --hack-red-glow: rgba(255, 45, 85, 0.2);
+
+  --hack-amber:    #FFB300;
+  --hack-purple:   #BD00FF;
+  --hack-purple-glow: rgba(189, 0, 255, 0.2);
+
+  --hack-text:     #b0ffb0;
+  --hack-text-dim: #4dff70;
+  --hack-text-muted: #2d6e3d;
+  --hack-text-faint: #1a4a25;
+
+  --font-terminal: 'Share Tech Mono', 'Courier New', monospace;
+  --font-hacker:   'Orbitron', monospace;
+  --font-code:     'JetBrains Mono', monospace;
+}
+
+/* ----------------------------------------------------------------
+   GLOBAL RESET WITH HACKER THEME
+   ---------------------------------------------------------------- */
+body {
+  background: var(--hack-bg) !important;
+  color: var(--hack-text) !important;
+  font-family: var(--font-terminal) !important;
+}
+
+/* ----------------------------------------------------------------
+   CRT SCANLINE OVERLAY
+   ---------------------------------------------------------------- */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 65, 0.015) 2px,
+    rgba(0, 255, 65, 0.015) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ----------------------------------------------------------------
+   MATRIX RAIN CANVAS
+   ---------------------------------------------------------------- */
+#matrix-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.07;
+}
+
+/* ----------------------------------------------------------------
+   GLITCH ANIMATION
+   ---------------------------------------------------------------- */
+@keyframes glitch {
+  0%, 100% { text-shadow: none; transform: none; }
+  10% { text-shadow: -2px 0 var(--hack-red), 2px 0 var(--hack-cyan); transform: translateX(-1px); }
+  20% { text-shadow: 2px 0 var(--hack-purple), -2px 0 var(--hack-green); transform: translateX(1px); }
+  30% { text-shadow: none; transform: none; }
+  40% { text-shadow: 1px 0 var(--hack-cyan), -1px 0 var(--hack-red); transform: skewX(-2deg); }
+  50% { text-shadow: none; transform: none; }
+  60% { text-shadow: -3px 0 var(--hack-green), 3px 0 var(--hack-red); transform: translateX(2px); }
+  70% { text-shadow: none; transform: none; }
+}
+
+@keyframes glitchSoft {
+  0%, 90%, 100% { opacity: 1; }
+  92% { opacity: 0.8; transform: translateX(1px); }
+  94% { opacity: 1; transform: translateX(-1px); }
+  96% { opacity: 0.9; transform: translateX(0); }
+}
+
+@keyframes neonPulse {
+  0%, 100% { text-shadow: 0 0 7px var(--hack-green), 0 0 10px var(--hack-green), 0 0 21px var(--hack-green); }
+  50% { text-shadow: 0 0 4px var(--hack-green), 0 0 7px var(--hack-green), 0 0 14px var(--hack-green), 0 0 30px rgba(0,255,65,0.5); }
+}
+
+@keyframes borderScan {
+  0% { box-shadow: 0 0 5px var(--hack-green), inset 0 0 5px rgba(0,255,65,0.1); }
+  50% { box-shadow: 0 0 15px var(--hack-green), 0 0 30px rgba(0,255,65,0.2), inset 0 0 10px rgba(0,255,65,0.15); }
+  100% { box-shadow: 0 0 5px var(--hack-green), inset 0 0 5px rgba(0,255,65,0.1); }
+}
+
+@keyframes cursorBlink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes scanLine {
+  0% { top: -100%; }
+  100% { top: 200%; }
+}
+
+@keyframes typeReveal {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes hackFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes greenFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ----------------------------------------------------------------
+   CYBER NAVBAR
+   ---------------------------------------------------------------- */
+.app-navbar {
+  background: rgba(0, 8, 0, 0.95) !important;
+  border-bottom: 1px solid var(--hack-green) !important;
+  box-shadow: 0 1px 20px rgba(0, 255, 65, 0.15) !important;
+  backdrop-filter: blur(10px) !important;
+  position: relative;
+}
+
+.app-navbar::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hack-green), var(--hack-cyan), var(--hack-green), transparent);
+  animation: borderScan 3s ease-in-out infinite;
+  opacity: 0.6;
+}
+
+/* Navbar logo hack style */
+.navbar-logo-text {
+  font-family: var(--font-hacker) !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  color: var(--hack-green) !important;
+  letter-spacing: 0.1em !important;
+  text-shadow: 0 0 10px rgba(0,255,65,0.5) !important;
+  -webkit-text-fill-color: unset !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+}
+
+.navbar-logo-text span {
+  color: var(--hack-cyan) !important;
+  text-shadow: 0 0 10px rgba(0,194,255,0.5) !important;
+  -webkit-text-fill-color: unset !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+}
+
+.navbar-logo-text::before {
+  content: '>_ ';
+  color: var(--hack-green-dim);
+  font-size: 0.8rem;
+}
+
+/* Nav links */
+.navbar-links a {
+  color: var(--hack-text-muted) !important;
+  font-family: var(--font-terminal) !important;
+  font-size: 0.85rem !important;
+  letter-spacing: 0.05em !important;
+  border: 1px solid transparent !important;
+  transition: all 0.2s !important;
+  text-transform: uppercase !important;
+}
+
+.navbar-links a:hover,
+.navbar-links a.nav-link-active {
+  color: var(--hack-green) !important;
+  background: rgba(0, 255, 65, 0.05) !important;
+  border-color: rgba(0, 255, 65, 0.3) !important;
+  text-shadow: 0 0 8px rgba(0,255,65,0.5) !important;
+}
+
+.navbar-links a.nav-link-active::after {
+  background: var(--hack-green) !important;
+  box-shadow: 0 0 6px var(--hack-green) !important;
+}
+
+/* ----------------------------------------------------------------
+   CYBER BUTTONS
+   ---------------------------------------------------------------- */
+.btn-primary {
+  background: transparent !important;
+  color: var(--hack-green) !important;
+  border: 1px solid var(--hack-green) !important;
+  border-radius: 0 !important;
+  font-family: var(--font-terminal) !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  font-size: 0.85rem !important;
+  box-shadow: 0 0 10px rgba(0,255,65,0.2), inset 0 0 10px rgba(0,255,65,0.05) !important;
+  transition: all 0.2s !important;
+  position: relative;
+  overflow: hidden;
+  text-shadow: none !important;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  background: linear-gradient(45deg, transparent, rgba(0,255,65,0.1), transparent);
+  transform: rotate(45deg);
+  transition: all 0.4s;
+}
+
+.btn-primary:hover::before {
+  top: 100%;
+  left: 100%;
+}
+
+.btn-primary:hover {
+  background: rgba(0,255,65,0.1) !important;
+  box-shadow: 0 0 20px rgba(0,255,65,0.4), inset 0 0 15px rgba(0,255,65,0.1) !important;
+  color: var(--hack-green) !important;
+  text-shadow: 0 0 8px var(--hack-green) !important;
+  transform: translateY(0) !important;
+  border-bottom-width: 1px !important;
+}
+
+.btn-primary:active {
+  background: rgba(0,255,65,0.15) !important;
+  transform: translateY(1px) !important;
+  box-shadow: 0 0 10px rgba(0,255,65,0.3) !important;
+}
+
+.btn-ghost {
+  color: var(--hack-text-muted) !important;
+  border: 1px solid rgba(0,255,65,0.2) !important;
+  border-radius: 0 !important;
+  font-family: var(--font-terminal) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  font-size: 0.82rem !important;
+  background: transparent !important;
+}
+
+.btn-ghost:hover {
+  color: var(--hack-green) !important;
+  border-color: var(--hack-green) !important;
+  background: rgba(0,255,65,0.05) !important;
+  text-shadow: 0 0 6px rgba(0,255,65,0.4) !important;
+}
+
+.btn-outline {
+  color: var(--hack-cyan) !important;
+  border: 1px solid var(--hack-cyan) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  font-family: var(--font-terminal) !important;
+  letter-spacing: 0.08em !important;
+}
+
+.btn-outline:hover {
+  background: rgba(0,194,255,0.1) !important;
+  box-shadow: 0 0 15px rgba(0,194,255,0.3) !important;
+  color: var(--hack-cyan) !important;
+  text-shadow: 0 0 8px var(--hack-cyan) !important;
+}
+
+.btn-emerald {
+  background: transparent !important;
+  color: #00ff88 !important;
+  border: 1px solid #00ff88 !important;
+  border-radius: 0 !important;
+  font-family: var(--font-terminal) !important;
+  letter-spacing: 0.1em !important;
+  box-shadow: 0 0 8px rgba(0,255,136,0.2) !important;
+}
+.btn-emerald:hover {
+  background: rgba(0,255,136,0.1) !important;
+  box-shadow: 0 0 20px rgba(0,255,136,0.4) !important;
+  color: #00ff88 !important;
+}
+
+.btn-danger {
+  color: var(--hack-red) !important;
+  border: 1px solid var(--hack-red) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  font-family: var(--font-terminal) !important;
+}
+.btn-danger:hover {
+  background: rgba(255,45,85,0.1) !important;
+  box-shadow: 0 0 15px rgba(255,45,85,0.3) !important;
+  color: var(--hack-red) !important;
+}
+
+/* ----------------------------------------------------------------
+   GLASS PANELS — CYBER TERMINAL PANELS
+   ---------------------------------------------------------------- */
+.glass-panel,
+.glass, .glass-sm, .glass-dark {
+  background: rgba(3, 13, 3, 0.85) !important;
+  border: 1px solid rgba(0,255,65,0.2) !important;
+  border-radius: 0 !important;
+  box-shadow: 0 0 20px rgba(0,255,65,0.05), inset 0 0 30px rgba(0,0,0,0.5) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-panel::before,
+.glass::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hack-green), transparent);
+  opacity: 0.6;
+}
+
+/* ----------------------------------------------------------------
+   FORMS — TERMINAL STYLE
+   ---------------------------------------------------------------- */
+.form-control,
+.auth-input {
+  background: rgba(0, 8, 0, 0.9) !important;
+  border: 1px solid rgba(0,255,65,0.25) !important;
+  border-radius: 0 !important;
+  color: var(--hack-green) !important;
+  font-family: var(--font-terminal) !important;
+  font-size: 0.9rem !important;
+  caret-color: var(--hack-green) !important;
+  transition: all 0.2s !important;
+}
+
+.form-control::placeholder,
+.auth-input::placeholder {
+  color: var(--hack-text-muted) !important;
+  opacity: 0.6;
+}
+
+.form-control:focus,
+.auth-input:focus {
+  border-color: var(--hack-green) !important;
+  box-shadow: 0 0 0 2px rgba(0,255,65,0.1), 0 0 15px rgba(0,255,65,0.2) !important;
+  background: rgba(0, 15, 0, 0.95) !important;
+  outline: none !important;
+}
+
+.form-label, label {
+  color: var(--hack-text-dim) !important;
+  font-family: var(--font-terminal) !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+.form-label::before { content: '// '; color: var(--hack-text-muted); }
+
+/* ----------------------------------------------------------------
+   AUTH PAGES — TERMINAL LOGIN
+   ---------------------------------------------------------------- */
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(2, 10, 2, 0.95) !important;
+  border: 1px solid var(--hack-green) !important;
+  border-radius: 0 !important;
+  padding: 2.5rem !important;
+  position: relative;
+  box-shadow: 0 0 40px rgba(0,255,65,0.1), 0 0 80px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.5) !important;
+  animation: greenFadeIn 0.5s ease forwards;
+}
+
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--hack-green), var(--hack-cyan), var(--hack-green), transparent);
+  animation: borderScan 3s ease-in-out infinite;
+}
+
+/* Top-right corner decoration */
+.auth-card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 50px; height: 50px;
+  border-top: 2px solid var(--hack-green);
+  border-right: 2px solid var(--hack-green);
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-icon {
+  width: 60px;
+  height: 60px;
+  background: rgba(0,255,65,0.05);
+  border: 1px solid var(--hack-green);
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  font-size: 1.5rem;
+  color: var(--hack-green);
+  text-shadow: 0 0 15px var(--hack-green);
+  animation: neonPulse 2s ease-in-out infinite;
+  position: relative;
+}
+
+.auth-icon::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 1px solid rgba(0,255,65,0.2);
+}
+
+.auth-title {
+  font-family: var(--font-hacker) !important;
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  color: var(--hack-green) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.15em !important;
+  text-shadow: 0 0 20px rgba(0,255,65,0.5) !important;
+  animation: glitchSoft 8s ease-in-out infinite !important;
+}
+
+.auth-subtitle {
+  color: var(--hack-text-muted) !important;
+  font-family: var(--font-terminal) !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 0.05em !important;
+  margin-top: 0.5rem !important;
+}
+
+.auth-subtitle::before { content: '[ '; }
+.auth-subtitle::after  { content: ' ]'; }
+
+.auth-input-group {
+  margin-bottom: 1.25rem;
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 0.85rem;
+  background: transparent;
+  border: 1px solid var(--hack-green);
+  color: var(--hack-green);
+  font-family: var(--font-terminal);
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s;
+  clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+  text-align: center;
+}
+
+.auth-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0,255,65,0.1), transparent);
+  transition: left 0.4s;
+}
+
+.auth-btn:hover::before { left: 100%; }
+
+.auth-btn:hover {
+  background: rgba(0,255,65,0.08);
+  box-shadow: 0 0 25px rgba(0,255,65,0.3);
+  text-shadow: 0 0 10px var(--hack-green);
+  color: var(--hack-green);
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-family: var(--font-terminal);
+  font-size: 0.8rem;
+  color: var(--hack-text-muted);
+}
+
+.auth-footer a {
+  color: var(--hack-cyan) !important;
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-shadow: 0 0 8px var(--hack-cyan);
+}
+
+/* ----------------------------------------------------------------
+   NAVBAR ACTIONS (logged-in user area)
+   ---------------------------------------------------------------- */
+.navbar-actions .btn-ghost {
+  color: var(--hack-text-muted) !important;
+}
+
+/* ----------------------------------------------------------------
+   AWARENESS TICKER
+   ---------------------------------------------------------------- */
+.awareness-ticker {
+  background: var(--hack-black) !important;
+  border-bottom: 1px solid rgba(0,255,65,0.2) !important;
+}
+
+.ticker-dot { background: var(--hack-green) !important; box-shadow: 0 0 6px var(--hack-green); }
+.ticker-label { color: var(--hack-green) !important; }
+.ticker-item { color: var(--hack-text-muted) !important; }
+
+/* ----------------------------------------------------------------
+   GLASS PANEL — Hacker overrides for dashboard cards
+   ---------------------------------------------------------------- */
+.border-neon-blue {
+  border-color: rgba(0,194,255,0.3) !important;
+  box-shadow: 0 0 15px rgba(0,194,255,0.05) !important;
+}
+
+.text-cyber-blue { color: var(--hack-cyan) !important; }
+.text-cyber-purple { color: var(--hack-purple) !important; }
+
+/* ----------------------------------------------------------------
+   CHAT UI — Terminal Style
+   ---------------------------------------------------------------- */
+.chat-user-item {
+  background: rgba(0,8,0,0.7) !important;
+  border: 1px solid rgba(0,255,65,0.12) !important;
+  border-radius: 0 !important;
+  transition: all 0.2s !important;
+}
+
+.chat-user-item:hover,
+.chat-user-item.active {
+  background: rgba(0,255,65,0.05) !important;
+  border-color: var(--hack-green) !important;
+  box-shadow: 0 0 10px rgba(0,255,65,0.1) !important;
+}
+
+.chat-user-name { color: var(--hack-text) !important; font-family: var(--font-terminal) !important; }
+.chat-user-status { font-family: var(--font-terminal) !important; font-size: 0.75rem !important; }
+.has-key { color: var(--hack-green) !important; text-shadow: 0 0 6px rgba(0,255,65,0.5) !important; }
+
+.chat-bubble {
+  background: rgba(0,15,0,0.9) !important;
+  border: 1px solid rgba(0,255,65,0.2) !important;
+  border-radius: 0 !important;
+  color: var(--hack-text) !important;
+  font-family: var(--font-terminal) !important;
+  position: relative;
+}
+
+.chat-bubble-container.sent .chat-bubble {
+  background: rgba(0,25,0,0.9) !important;
+  border-color: rgba(0,255,65,0.35) !important;
+  box-shadow: 0 0 10px rgba(0,255,65,0.08) !important;
+}
+
+.chat-bubble-container.received .chat-bubble {
+  border-color: rgba(0,194,255,0.25) !important;
+  box-shadow: 0 0 10px rgba(0,194,255,0.05) !important;
+}
+
+.chat-bubble-lock { color: var(--hack-green) !important; }
+.chat-bubble-block { color: var(--hack-cyan) !important; font-family: var(--font-terminal) !important; }
+
+/* Chat input */
+.chat-input-area {
+  background: rgba(0,8,0,0.9) !important;
+  border-top: 1px solid rgba(0,255,65,0.2) !important;
+}
+
+.form-control-cyber {
+  background: rgba(0,5,0,0.95) !important;
+  border: 1px solid rgba(0,255,65,0.25) !important;
+  border-radius: 0 !important;
+  color: var(--hack-green) !important;
+  font-family: var(--font-terminal) !important;
+  caret-color: var(--hack-green) !important;
+}
+
+.form-control-cyber:focus {
+  border-color: var(--hack-green) !important;
+  box-shadow: 0 0 10px rgba(0,255,65,0.2) !important;
+  outline: none !important;
+}
+
+.btn-cyber-primary {
+  background: transparent !important;
+  border: 1px solid var(--hack-green) !important;
+  color: var(--hack-green) !important;
+  border-radius: 0 !important;
+  font-size: 1rem !important;
+}
+
+.btn-cyber-primary:hover {
+  background: rgba(0,255,65,0.1) !important;
+  box-shadow: 0 0 15px rgba(0,255,65,0.3) !important;
+}
+
+/* Chat window header */
+.chat-window-header {
+  background: rgba(0,10,0,0.95) !important;
+  border-bottom: 1px solid rgba(0,255,65,0.2) !important;
+  font-family: var(--font-terminal) !important;
+  color: var(--hack-green) !important;
+  position: relative;
+}
+
+/* Chat window sidebar */
+.chat-sidebar {
+  background: rgba(0,5,0,0.95) !important;
+  border-right: 1px solid rgba(0,255,65,0.15) !important;
+  border-radius: 0 !important;
+}
+
+.chat-messages { background: transparent !important; }
+.chat-window { background: rgba(0,8,0,0.9) !important; border-radius: 0 !important; }
+
+/* ----------------------------------------------------------------
+   BLOCKCHAIN BLOCKS
+   ---------------------------------------------------------------- */
+.blockchain-block {
+  background: rgba(0,10,0,0.9) !important;
+  border: 1px solid rgba(0,255,65,0.2) !important;
+  border-radius: 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.blockchain-block::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hack-green), transparent);
+}
+
+.blockchain-block.verified {
+  border-color: var(--hack-green) !important;
+  box-shadow: 0 0 15px rgba(0,255,65,0.15) !important;
+}
+
+.blockchain-block.tampered {
+  border-color: var(--hack-red) !important;
+  box-shadow: 0 0 15px rgba(255,45,85,0.2) !important;
+}
+
+.block-header {
+  background: rgba(0,20,0,0.8) !important;
+  border-bottom: 1px solid rgba(0,255,65,0.15) !important;
+}
+
+.block-title {
+  font-family: var(--font-hacker) !important;
+  font-size: 0.75rem !important;
+  color: var(--hack-green) !important;
+  letter-spacing: 0.1em !important;
+  text-shadow: 0 0 6px rgba(0,255,65,0.5) !important;
+}
+
+.block-data-label {
+  color: var(--hack-text-muted) !important;
+  font-family: var(--font-terminal) !important;
+  font-size: 0.72rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+
+.block-data-value {
+  font-family: var(--font-code) !important;
+  font-size: 0.78rem !important;
+  color: var(--hack-text) !important;
+}
+
+.block-hash-box {
+  background: rgba(0,5,0,0.9) !important;
+  border: 1px solid rgba(0,255,65,0.15) !important;
+  border-radius: 0 !important;
+  font-family: var(--font-code) !important;
+  font-size: 0.7rem !important;
+  color: var(--hack-green-dim) !important;
+}
+
+.block-hash-box.prev { border-color: rgba(0,194,255,0.15) !important; color: var(--hack-cyan-dim) !important; }
+
+.block-link-arrow { color: var(--hack-green) !important; }
+
+/* Audit banner */
+.audit-indicator.valid {
+  background: rgba(0,255,65,0.05) !important;
+  border: 1px solid var(--hack-green) !important;
+  color: var(--hack-green) !important;
+}
+
+.audit-indicator.invalid {
+  background: rgba(255,45,85,0.05) !important;
+  border: 1px solid var(--hack-red) !important;
+  color: var(--hack-red) !important;
+}
+
+/* ----------------------------------------------------------------
+   MINING OVERLAY
+   ---------------------------------------------------------------- */
+.mining-overlay {
+  background: rgba(0, 5, 0, 0.97) !important;
+}
+
+.mining-cube-face {
+  background: rgba(0,255,65,0.05) !important;
+  border: 1px solid rgba(0,255,65,0.3) !important;
+  color: var(--hack-green) !important;
+  font-family: var(--font-hacker) !important;
+  font-size: 0.7rem !important;
+  text-shadow: 0 0 8px var(--hack-green) !important;
+}
+
+#mining-nonce-counter {
+  color: var(--hack-green) !important;
+  font-family: var(--font-terminal) !important;
+}
+
+.mining-progress-bar {
+  background: linear-gradient(90deg, var(--hack-green), var(--hack-cyan)) !important;
+  box-shadow: 0 0 10px rgba(0,255,65,0.5) !important;
+}
+
+.mining-progress-wrap {
+  background: rgba(0,255,65,0.08) !important;
+  border: 1px solid rgba(0,255,65,0.2) !important;
+}
+
+/* ----------------------------------------------------------------
+   FOOTER
+   ---------------------------------------------------------------- */
+.app-footer {
+  background: rgba(0,5,0,0.95) !important;
+  border-top: 1px solid rgba(0,255,65,0.2) !important;
+}
+
+.footer-heading {
+  color: var(--hack-green) !important;
+  font-family: var(--font-hacker) !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.1em !important;
+}
+
+.footer-links a {
+  color: var(--hack-text-muted) !important;
+  font-family: var(--font-terminal) !important;
+  font-size: 0.8rem !important;
+}
+
+.footer-links a:hover { color: var(--hack-green) !important; text-shadow: 0 0 6px rgba(0,255,65,0.4) !important; }
+
+.footer-brand-desc { color: var(--hack-text-muted) !important; font-family: var(--font-terminal) !important; font-size: 0.78rem !important; }
+.footer-copyright { color: var(--hack-text-muted) !important; font-family: var(--font-terminal) !important; font-size: 0.75rem !important; }
+
+/* ----------------------------------------------------------------
+   BADGES
+   ---------------------------------------------------------------- */
+.badge-emerald { background: rgba(0,255,65,0.1) !important; border: 1px solid rgba(0,255,65,0.3) !important; color: var(--hack-green) !important; border-radius: 0 !important; font-family: var(--font-terminal) !important; }
+.badge-cyan    { background: rgba(0,194,255,0.1) !important; border: 1px solid rgba(0,194,255,0.3) !important; color: var(--hack-cyan) !important; border-radius: 0 !important; font-family: var(--font-terminal) !important; }
+.badge-gray    { background: rgba(0,255,65,0.05) !important; border: 1px solid rgba(0,255,65,0.15) !important; color: var(--hack-text-muted) !important; border-radius: 0 !important; font-family: var(--font-terminal) !important; }
+
+/* Bootstrap badge overrides */
+.badge.bg-success-subtle { background: rgba(0,255,65,0.08) !important; border: 1px solid rgba(0,255,65,0.3) !important; color: var(--hack-green) !important; border-radius: 0 !important; }
+.badge.bg-danger-subtle  { background: rgba(255,45,85,0.08) !important;  border: 1px solid rgba(255,45,85,0.3) !important;  color: var(--hack-red) !important;   border-radius: 0 !important; }
+.badge.bg-secondary-subtle { background: rgba(0,255,65,0.04) !important; border: 1px solid rgba(0,255,65,0.12) !important; color: var(--hack-text-muted) !important; border-radius: 0 !important; }
+
+/* ----------------------------------------------------------------
+   ALERTS / FLASH MESSAGES
+   ---------------------------------------------------------------- */
+.alert {
+  border-radius: 0 !important;
+  font-family: var(--font-terminal) !important;
+  font-size: 0.85rem !important;
+}
+
+.alert-success { background: rgba(0,255,65,0.08) !important; border-color: rgba(0,255,65,0.3) !important; color: var(--hack-green) !important; }
+.alert-danger  { background: rgba(255,45,85,0.08) !important; border-color: rgba(255,45,85,0.3) !important; color: var(--hack-red) !important; }
+.alert-warning { background: rgba(255,179,0,0.08) !important; border-color: rgba(255,179,0,0.3) !important; color: var(--hack-amber) !important; }
+.alert-info    { background: rgba(0,194,255,0.08) !important; border-color: rgba(0,194,255,0.3) !important; color: var(--hack-cyan) !important; }
+
+/* ----------------------------------------------------------------
+   HEADINGS
+   ---------------------------------------------------------------- */
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-hacker) !important;
+  color: var(--hack-green) !important;
+  letter-spacing: 0.05em !important;
+}
+
+h1 { text-shadow: 0 0 20px rgba(0,255,65,0.4) !important; }
+h2 { text-shadow: 0 0 15px rgba(0,255,65,0.3) !important; }
+
+/* Override for text-light class used in templates */
+.text-light { color: var(--hack-text) !important; }
+.text-secondary { color: var(--hack-text-muted) !important; font-family: var(--font-terminal) !important; }
+.text-muted { color: var(--hack-text-muted) !important; font-family: var(--font-terminal) !important; }
+
+/* ----------------------------------------------------------------
+   SCROLLBAR
+   ---------------------------------------------------------------- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--hack-black); }
+::-webkit-scrollbar-thumb { background: var(--hack-green-dark); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: var(--hack-green); box-shadow: 0 0 6px var(--hack-green); }
+
+/* ----------------------------------------------------------------
+   KEY MANAGER PAGE
+   ---------------------------------------------------------------- */
+.key-display-box, .pubkey-box, .privkey-box,
+[id$="-box"] {
+  background: rgba(0,5,0,0.95) !important;
+  border: 1px solid rgba(0,255,65,0.2) !important;
+  border-radius: 0 !important;
+  color: var(--hack-green-dim) !important;
+  font-family: var(--font-code) !important;
+  font-size: 0.72rem !important;
+}
+
+/* ----------------------------------------------------------------
+   PROFILE PAGE
+   ---------------------------------------------------------------- */
+.profile-avatar {
+  border: 2px solid var(--hack-green) !important;
+  box-shadow: 0 0 20px rgba(0,255,65,0.2) !important;
+}
+
+/* ----------------------------------------------------------------
+   ADMIN PAGE
+   ---------------------------------------------------------------- */
+.table {
+  background: transparent !important;
+  color: var(--hack-text) !important;
+  font-family: var(--font-terminal) !important;
+  font-size: 0.82rem !important;
+}
+
+.table thead th {
+  background: rgba(0,255,65,0.05) !important;
+  color: var(--hack-green) !important;
+  border-color: rgba(0,255,65,0.2) !important;
+  font-family: var(--font-hacker) !important;
+  letter-spacing: 0.05em !important;
+  font-size: 0.72rem !important;
+  text-transform: uppercase !important;
+}
+
+.table tbody tr { border-color: rgba(0,255,65,0.08) !important; }
+.table tbody tr:hover { background: rgba(0,255,65,0.03) !important; }
+.table td { border-color: rgba(0,255,65,0.08) !important; color: var(--hack-text-dim) !important; }
+
+/* ----------------------------------------------------------------
+   SPINNER
+   ---------------------------------------------------------------- */
+.spinner-border { color: var(--hack-green) !important; }
+.text-cyber-blue.spinner-border { color: var(--hack-cyan) !important; }
+
+/* ----------------------------------------------------------------
+   TOAST
+   ---------------------------------------------------------------- */
+.toast {
+  background: rgba(0,10,0,0.97) !important;
+  border: 1px solid rgba(0,255,65,0.3) !important;
+  border-radius: 0 !important;
+  font-family: var(--font-terminal) !important;
+  color: var(--hack-text) !important;
+  box-shadow: 0 0 20px rgba(0,255,65,0.1) !important;
+}
+
+/* ----------------------------------------------------------------
+   SECTION HEADINGS in dashboard etc
+   ---------------------------------------------------------------- */
+.section-label, .section-title {
+  font-family: var(--font-hacker) !important;
+  color: var(--hack-green) !important;
+  font-size: 0.72rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.15em !important;
+}
+
+/* ----------------------------------------------------------------
+   CYBER CURSOR BLINK
+   ---------------------------------------------------------------- */
+.cyber-cursor::after {
+  content: '_';
+  animation: cursorBlink 1s step-end infinite;
+  color: var(--hack-green);
+  margin-left: 2px;
+}
+
+/* ----------------------------------------------------------------
+   HOMEPAGE HERO OVERRIDE
+   ---------------------------------------------------------------- */
+.hero-section, .hero, [class*="hero"] {
+  background: transparent !important;
+}
+
+.hero-eyebrow, .hero-title, .hero-subtitle, .hero-headline {
+  font-family: var(--font-hacker) !important;
+}
+
+/* ----------------------------------------------------------------
+   MISC UTILITY OVERRIDES
+   ---------------------------------------------------------------- */
+.border-neon-red { border-color: var(--hack-red) !important; }
+.border-neon-green { border-color: var(--hack-green) !important; }
+
+/* Selection */
+::selection { background: rgba(0,255,65,0.25); color: var(--hack-green); }

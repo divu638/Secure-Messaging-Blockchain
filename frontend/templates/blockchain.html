@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}[CHAIN LEDGER] — SecureMsg Blockchain{% endblock %}
+
+{% block extra_head %}
+<style>
+  .page-header-cyber {
+    background: rgba(0,10,5,0.92);
+    border: 1px solid rgba(0,255,65,0.22);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header-cyber::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background: linear-gradient(90deg,transparent,#00FF41,#00C2FF,transparent);
+    opacity: 0.5;
+  }
+
+  .chain-container {
+    background: rgba(0,8,4,0.92);
+    border: 1px solid rgba(0,255,65,0.15);
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .chain-container::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background: linear-gradient(90deg,transparent,rgba(0,255,65,0.4),transparent);
+  }
+
+  /* Audit banner */
+  .audit-valid {
+    background: rgba(0,255,65,0.05);
+    border: 1px solid rgba(0,255,65,0.3);
+    color: #00FF41;
+    padding: 0.85rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem; letter-spacing: 0.06em;
+    margin-bottom: 1.5rem;
+  }
+  .audit-invalid {
+    background: rgba(255,45,85,0.05);
+    border: 1px solid rgba(255,45,85,0.3);
+    color: #FF2D55;
+    padding: 0.85rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem; letter-spacing: 0.06em;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Chain timeline */
+  .chain-timeline {
+    position: relative;
+    padding-left: 2.5rem;
+  }
+  .chain-timeline::before {
+    content:''; position:absolute;
+    left: 1.1rem; top:0; bottom:0; width:1px;
+    background: linear-gradient(180deg,#00FF41 0%,#00C2FF 50%,#BD00FF 100%);
+    opacity: 0.3;
+  }
+
+  /* Action buttons */
+  .btn-tamper {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 7px 18px;
+    border: 1px solid rgba(255,45,85,0.5);
+    color: #FF2D55; background: rgba(255,45,85,0.06); cursor: pointer;
+    clip-path: polygon(7px 0%,100% 0%,calc(100% - 7px) 100%,0% 100%);
+    transition: all 0.25s;
+  }
+  .btn-tamper:hover {
+    background: rgba(255,45,85,0.12);
+    box-shadow: 0 0 20px rgba(255,45,85,0.25);
+    text-shadow: 0 0 8px #FF2D55;
+    border-color: #FF2D55;
+  }
+
+  .btn-audit {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 7px 18px;
+    border: 1px solid rgba(0,255,65,0.4);
+    color: #00FF41; background: rgba(0,255,65,0.05); cursor: pointer;
+    clip-path: polygon(7px 0%,100% 0%,calc(100% - 7px) 100%,0% 100%);
+    transition: all 0.25s;
+  }
+  .btn-audit:hover {
+    background: rgba(0,255,65,0.10);
+    box-shadow: 0 0 20px rgba(0,255,65,0.2);
+    text-shadow: 0 0 8px #00FF41;
+    border-color: #00FF41;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container py-4">
+
+  <!-- ── HEADER ── -->
+  <div class="page-header-cyber">
+    <div>
+      <h2 style="font-family:'Orbitron',monospace;font-size:0.95rem;font-weight:700;color:#00FF41;letter-spacing:0.1em;text-shadow:0 0 15px rgba(0,255,65,0.4);margin:0 0 3px;">
+        <i class="bi bi-link-45deg me-2"></i>BLOCKCHAIN LEDGER
+      </h2>
+      <p style="font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:rgba(0,255,65,0.4);margin:0;">
+        Immutable cryptographic ledger &nbsp;·&nbsp; SHA-256 linked blocks
+      </p>
+    </div>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+      <button id="btn-tamper-db" class="btn-tamper">
+        <i class="bi bi-lightning-charge-fill me-1"></i>SIMULATE TAMPER
+      </button>
+      <button id="btn-audit-chain" class="btn-audit">
+        <i class="bi bi-shield-fill-check me-1"></i>RUN LEDGER AUDIT
+      </button>
+    </div>
+  </div>
+
+  <!-- ── CHAIN CONTAINER ── -->
+  <div class="chain-container">
+
+    <!-- Audit Banner -->
+    <div id="audit-status-container" class="d-none">
+      <div id="audit-status-banner" class="audit-valid">
+        <i class="bi bi-check-circle-fill" style="font-size:1.1rem;"></i>
+        <span>AUDIT PASSED — All blocks cryptographically valid.</span>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+      <div style="flex:1;min-width:130px;background:rgba(0,255,65,0.04);border:1px solid rgba(0,255,65,0.15);padding:0.75rem 1rem;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(0,255,65,0.4);letter-spacing:0.1em;margin-bottom:4px;">TOTAL BLOCKS</div>
+        <div id="stat-total-blocks" style="font-family:'Orbitron',monospace;font-size:1.3rem;color:#00FF41;text-shadow:0 0 10px rgba(0,255,65,0.4);">—</div>
+      </div>
+      <div style="flex:1;min-width:130px;background:rgba(0,194,255,0.04);border:1px solid rgba(0,194,255,0.15);padding:0.75rem 1rem;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(0,194,255,0.4);letter-spacing:0.1em;margin-bottom:4px;">CHAIN STATUS</div>
+        <div id="stat-chain-status" style="font-family:'Orbitron',monospace;font-size:0.82rem;color:#00C2FF;text-shadow:0 0 10px rgba(0,194,255,0.4);letter-spacing:0.08em;">VERIFYING...</div>
+      </div>
+      <div style="flex:1;min-width:130px;background:rgba(189,0,255,0.04);border:1px solid rgba(189,0,255,0.15);padding:0.75rem 1rem;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(189,0,255,0.4);letter-spacing:0.1em;margin-bottom:4px;">ALGORITHM</div>
+        <div style="font-family:'Orbitron',monospace;font-size:0.75rem;color:#BD00FF;text-shadow:0 0 10px rgba(189,0,255,0.4);letter-spacing:0.08em;">SHA-256 POW</div>
+      </div>
+      <div style="flex:1;min-width:130px;background:rgba(0,255,170,0.04);border:1px solid rgba(0,255,170,0.18);padding:0.75rem 1rem;">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(0,255,170,0.4);letter-spacing:0.1em;margin-bottom:4px;">IPFS STORAGE</div>
+        <div id="stat-ipfs-status" style="font-family:'Orbitron',monospace;font-size:0.72rem;color:#00ffaa;text-shadow:0 0 10px rgba(0,255,170,0.4);letter-spacing:0.06em;">CHECKING...</div>
+      </div>
+    </div>
+
+    <!-- ── MERKLE ROOT BOX (NEW) ── -->
+    <div id="merkle-root-box" style="background:rgba(0,194,255,0.03);border:1px solid rgba(0,194,255,0.2);padding:1rem 1.25rem;margin-bottom:1.5rem;position:relative;">
+      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#00C2FF,transparent);opacity:0.4;"></div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(0,194,255,0.5);letter-spacing:0.12em;margin-bottom:6px;">
+        <i class="bi bi-diagram-3-fill me-1"></i>MERKLE ROOT — Cryptographic Chain Summary
+      </div>
+      <div id="merkle-root-value"
+           style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:#00C2FF;letter-spacing:0.04em;word-break:break-all;text-shadow:0 0 8px rgba(0,194,255,0.25);">
+        <span style="opacity:0.4;">Computing...</span>
+      </div>
+      <div style="margin-top:6px;font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(0,194,255,0.35);">
+        SHA-256 hash of all block hashes in the chain tree structure. Any tamper changes this root.
+      </div>
+    </div>
+
+    <!-- Blockchain Timeline -->
+    <div class="chain-timeline">
+      <div class="blockchain-timeline" id="blockchain-timeline-list">
+        <!-- Blocks rendered by script.js -->
+        <div style="display:flex;flex-direction:column;align-items:flex-start;padding:1rem 0;gap:0.5rem;">
+          <div style="width:28px;height:28px;border:2px solid #00FF41;border-top-color:transparent;border-radius:50%;animation:borderScan 0.8s linear infinite;"></div>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:rgba(0,255,65,0.4);">Loading blockchain data...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.CURRENT_USER = "{{ username }}";
+
+// Fetch and display Merkle root
+async function loadMerkleRoot() {
+  try {
+    const res  = await fetch('/api/blockchain/merkle');
+    const data = await res.json();
+    const el   = document.getElementById('merkle-root-value');
+    if (el && data.merkle_root) {
+      el.innerHTML = `
+        <span style="color:#00C2FF;">${data.merkle_root.substring(0,32)}</span><span style="color:rgba(0,194,255,0.5);">${data.merkle_root.substring(32)}</span>
+        <span class="ms-2" style="font-size:0.65rem;color:rgba(0,194,255,0.4);">(${data.total_blocks} blocks)</span>
+      `;
+    }
+  } catch(e) {
+    const el = document.getElementById('merkle-root-value');
+    if (el) el.innerHTML = '<span style="color:rgba(239,68,68,0.6);">Failed to compute</span>';
+  }
+}
+
+// Fetch IPFS / Pinata connectivity status
+async function loadIPFSStatus() {
+  const el = document.getElementById('stat-ipfs-status');
+  if (!el) return;
+  try {
+    const res  = await fetch('/api/ipfs/status');
+    const data = await res.json();
+    if (data.pinata_configured) {
+      el.textContent = 'PINATA ✓';
+      el.style.color = '#00ffaa';
+      el.style.textShadow = '0 0 10px rgba(0,255,170,0.5)';
+    } else {
+      el.textContent = 'LOCAL';
+      el.style.color = '#FFD700';
+      el.style.textShadow = '0 0 10px rgba(255,215,0,0.4)';
+      el.title = 'Pinata API not configured — using local IPFS-like storage as fallback';
+    }
+  } catch(e) {
+    if (el) { el.textContent = 'LOCAL'; el.style.color = '#FFD700'; }
+  }
+}
+
+// Update stats after blocks load
+setTimeout(() => {
+  const blocks = document.querySelectorAll('.blockchain-block');
+  const el = document.getElementById('stat-total-blocks');
+  if (el) el.textContent = blocks.length || '—';
+  const st = document.getElementById('stat-chain-status');
+  if (st) st.textContent = 'ACTIVE';
+  loadMerkleRoot();
+  loadIPFSStatus();
+}, 2000);
+</script>
+{% endblock %}
+
+

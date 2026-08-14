@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block title %}[OPS CENTER] — SecureMsg Blockchain{% endblock %}
+
+{% block content %}
+<section class="container py-4">
+
+  <!-- Live system clock script -->
+  <script>
+    function updateClock() {
+      const now = new Date();
+      const el = document.getElementById('live-clock');
+      if (el) el.textContent = now.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+
+  <!-- ── HEADER ── -->
+  <div style="background:rgba(0,8,0,0.9);border:1px solid rgba(0,255,65,0.25);margin-bottom:1.5rem;padding:1.25rem 1.5rem;position:relative;overflow:hidden;">
+    <!-- Top glow line -->
+    <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#00FF41,#00C2FF,#00FF41,transparent);animation:borderScan 3s ease-in-out infinite;"></div>
+
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <!-- Terminal header label -->
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(0,255,65,0.4);letter-spacing:0.15em;margin-bottom:0.5rem;">
+          root@securemsg:~$ whoami --session
+        </div>
+        <h2 style="font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:700;color:#00FF41;letter-spacing:0.08em;text-shadow:0 0 20px rgba(0,255,65,0.4);margin:0 0 0.4rem;">
+          <span style="color:rgba(0,255,65,0.4);">&gt;_</span> SECURE OPS CENTER
+        </h2>
+        <p style="font-family:'Share Tech Mono',monospace;font-size:0.82rem;color:rgba(0,255,65,0.5);margin:0;">
+          <span style="color:#00C2FF;">@{{ username }}</span>
+          &nbsp;·&nbsp;
+          <span id="key-status-inline" style="color:rgba(0,255,65,0.4);"></span>
+        </p>
+      </div>
+      <div style="display:flex;align-items:center;flex-direction:column;gap:0.5rem;align-items:flex-end;">
+        <!-- Live status indicators -->
+        <div style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:rgba(0,255,65,0.5);">
+          <span style="width:6px;height:6px;border-radius:50%;background:#00FF41;display:inline-block;box-shadow:0 0 8px #00FF41;animation:neonPulse 2s infinite;"></span>
+          STATUS: ONLINE
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:rgba(0,255,65,0.35);" id="live-clock">--</div>
+        <span id="key-status-badge" style="font-family:'Share Tech Mono',monospace;font-size:0.72rem;padding:4px 12px;border:1px solid rgba(255,45,85,0.4);color:#ff2d55;background:rgba(255,45,85,0.06);letter-spacing:0.08em;">
+          <i class="bi bi-shield-slash-fill me-1"></i>KEYS MISSING
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── QUICK STATS ── -->
+  <div class="row g-3 mb-4">
+    {% for stat_id, icon, label, color in [
+      ('stat-messages', 'bi-shield-lock-fill', 'ENCRYPTED MSG', '#00C2FF'),
+      ('stat-blocks',   'bi-link-45deg',      'BLOCKS MINED',  '#00FF41'),
+      ('stat-contacts', 'bi-people-fill',      'ACTIVE AGENTS', '#BD00FF')
+    ] %}
+    <div class="col-sm-4">
+      <div style="background:rgba(0,8,0,0.9);border:1px solid rgba({{ '0,194,255' if color == '#00C2FF' else ('0,255,65' if color == '#00FF41' else '189,0,255') }},0.25);padding:1rem 1.25rem;position:relative;overflow:hidden;transition:all 0.25s;"
+        onmouseover="this.style.borderColor='{{ color }}';this.style.boxShadow='0 0 20px {{ color }}22';"
+        onmouseout="this.style.borderColor='rgba({{ '0,194,255' if color == '#00C2FF' else ('0,255,65' if color == '#00FF41' else '189,0,255') }},0.25)';this.style.boxShadow='none';">
+        <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,{{ color }},transparent);opacity:0.6;"></div>
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <div style="width:46px;height:46px;border:1px solid {{ color }};background:rgba({{ '0,194,255' if color == '#00C2FF' else ('0,255,65' if color == '#00FF41' else '189,0,255') }},0.12);display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:{{ color }};text-shadow:0 0 14px {{ color }};box-shadow:inset 0 0 12px rgba({{ '0,194,255' if color == '#00C2FF' else ('0,255,65' if color == '#00FF41' else '189,0,255') }},0.1);flex-shrink:0;">
+            <i class="bi {{ icon }}"></i>
+          </div>
+          <div>
+            <div style="font-family:'Orbitron',monospace;font-size:1.5rem;font-weight:700;color:#e0ffe0;line-height:1;" id="{{ stat_id }}">
+              <span style="font-family:'Share Tech Mono',monospace;color:{{ color }};font-size:0.7rem;animation:cursorBlink 1s step-end infinite;">_</span>
+            </div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:{{ color }};letter-spacing:0.12em;opacity:0.7;">{{ label }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ── NAVIGATION CARDS ── -->
+  <div class="row g-4 mb-4">
+
+    <!-- Secure Chat -->
+    <div class="col-md-4">
+      <a href="{{ url_for('chat') }}" style="text-decoration:none;display:block;">
+        <div style="background:rgba(0,8,18,0.95);border:1px solid rgba(0,194,255,0.3);padding:1.5rem;height:100%;position:relative;overflow:hidden;transition:all 0.25s;cursor:pointer;"
+          onmouseover="this.style.borderColor='#00C2FF';this.style.boxShadow='0 0 30px rgba(0,194,255,0.2)';this.style.transform='translateY(-3px)';"
+          onmouseout="this.style.borderColor='rgba(0,194,255,0.3)';this.style.boxShadow='none';this.style.transform='';">
+          <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#00C2FF,transparent);"></div>
+          <div style="position:absolute;top:8px;right:8px;width:16px;height:16px;border-top:2px solid rgba(0,194,255,0.5);border-right:2px solid rgba(0,194,255,0.5);"></div>
+          <div style="width:52px;height:52px;border:1px solid #00C2FF;background:rgba(0,194,255,0.12);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#00C2FF;margin-bottom:1rem;text-shadow:0 0 18px #00C2FF;box-shadow:inset 0 0 15px rgba(0,194,255,0.1),0 0 12px rgba(0,194,255,0.15);">
+            <i class="bi bi-shield-lock-fill"></i>
+          </div>
+          <div style="font-family:'Orbitron',monospace;font-size:0.88rem;font-weight:700;color:#00C2FF;letter-spacing:0.08em;margin-bottom:0.6rem;text-shadow:0 0 10px rgba(0,194,255,0.6);">SECURE CHAT</div>
+          <p style="font-family:'Share Tech Mono',monospace;font-size:0.78rem;color:rgba(180,230,255,0.55);margin-bottom:1rem;line-height:1.65;">RSA-encrypted E2EE messages stored as blockchain blocks. Zero knowledge server.</p>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:#00C2FF;display:flex;align-items:center;gap:6px;">
+            OPEN CHANNEL <i class="bi bi-arrow-right"></i>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Key Manager -->
+    <div class="col-md-4">
+      <a href="{{ url_for('key_manager') }}" style="text-decoration:none;display:block;">
+        <div style="background:rgba(10,0,18,0.95);border:1px solid rgba(189,0,255,0.3);padding:1.5rem;height:100%;position:relative;overflow:hidden;transition:all 0.25s;cursor:pointer;"
+          onmouseover="this.style.borderColor='#BD00FF';this.style.boxShadow='0 0 30px rgba(189,0,255,0.2)';this.style.transform='translateY(-3px)';"
+          onmouseout="this.style.borderColor='rgba(189,0,255,0.3)';this.style.boxShadow='none';this.style.transform='';">
+          <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#BD00FF,transparent);"></div>
+          <div style="position:absolute;top:8px;right:8px;width:16px;height:16px;border-top:2px solid rgba(189,0,255,0.5);border-right:2px solid rgba(189,0,255,0.5);"></div>
+          <div style="width:52px;height:52px;border:1px solid #BD00FF;background:rgba(189,0,255,0.12);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#BD00FF;margin-bottom:1rem;text-shadow:0 0 18px #BD00FF;box-shadow:inset 0 0 15px rgba(189,0,255,0.1),0 0 12px rgba(189,0,255,0.15);">
+            <i class="bi bi-key-fill"></i>
+          </div>
+          <div style="font-family:'Orbitron',monospace;font-size:0.88rem;font-weight:700;color:#BD00FF;letter-spacing:0.08em;margin-bottom:0.6rem;text-shadow:0 0 10px rgba(189,0,255,0.6);">KEY VAULT</div>
+          <p style="font-family:'Share Tech Mono',monospace;font-size:0.78rem;color:rgba(220,185,255,0.55);margin-bottom:1rem;line-height:1.65;">Generate and manage RSA-OAEP 2048-bit key pairs stored locally in your browser vault.</p>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:#BD00FF;display:flex;align-items:center;gap:6px;">
+            MANAGE KEYS <i class="bi bi-arrow-right"></i>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Blockchain Ledger -->
+    <div class="col-md-4">
+      <a href="{{ url_for('blockchain_ledger') }}" style="text-decoration:none;display:block;">
+        <div style="background:rgba(0,12,4,0.95);border:1px solid rgba(0,255,65,0.3);padding:1.5rem;height:100%;position:relative;overflow:hidden;transition:all 0.25s;cursor:pointer;"
+          onmouseover="this.style.borderColor='#00FF41';this.style.boxShadow='0 0 30px rgba(0,255,65,0.2)';this.style.transform='translateY(-3px)';"
+          onmouseout="this.style.borderColor='rgba(0,255,65,0.3)';this.style.boxShadow='none';this.style.transform='';">
+          <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#00FF41,transparent);"></div>
+          <div style="position:absolute;top:8px;right:8px;width:16px;height:16px;border-top:2px solid rgba(0,255,65,0.5);border-right:2px solid rgba(0,255,65,0.5);"></div>
+          <div style="width:52px;height:52px;border:1px solid #00FF41;background:rgba(0,255,65,0.1);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#00FF41;margin-bottom:1rem;text-shadow:0 0 18px #00FF41;box-shadow:inset 0 0 15px rgba(0,255,65,0.08),0 0 12px rgba(0,255,65,0.12);">
+            <i class="bi bi-link-45deg"></i>
+          </div>
+          <div style="font-family:'Orbitron',monospace;font-size:0.88rem;font-weight:700;color:#00FF41;letter-spacing:0.08em;margin-bottom:0.6rem;text-shadow:0 0 10px rgba(0,255,65,0.6);">CHAIN LEDGER</div>
+          <p style="font-family:'Share Tech Mono',monospace;font-size:0.78rem;color:rgba(185,255,210,0.55);margin-bottom:1rem;line-height:1.65;">Immutable transaction ledger. Run integrity audits and simulate tamper attacks.</p>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:#00FF41;display:flex;align-items:center;gap:6px;">
+            VIEW LEDGER <i class="bi bi-arrow-right"></i>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── ACTIVITY LOG + SYSTEM HEALTH ── -->
+  <div class="row g-4">
+
+    <!-- Activity Log -->
+    <div class="col-lg-8">
+      <div style="background:rgba(0,8,0,0.9);border:1px solid rgba(0,255,65,0.2);position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#00FF41,transparent);opacity:0.5;"></div>
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid rgba(0,255,65,0.1);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-family:'Orbitron',monospace;font-size:0.72rem;color:#00FF41;letter-spacing:0.12em;">
+            <i class="bi bi-activity me-2"></i>ACTIVITY LOG
+          </span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(0,255,65,0.3);letter-spacing:0.1em;">LIVE &nbsp;●</span>
+        </div>
+        <div style="padding:1.25rem 1.5rem;">
+          {% for icon, label, msg, color, time in [
+            ('bi-link-45deg', 'BLOCK MINED', 'Block appended to ledger via SHA-256 Proof-of-Work consensus.', '#00FF41', 'just now'),
+            ('bi-shield-lock-fill', 'MSG TRANSMITTED', 'E2EE encrypted message dispatched to remote agent.', '#00C2FF', '14m ago'),
+            ('bi-key-fill', 'KEY INITIALIZED', 'Generated new RSA-OAEP 2048-bit key pair stored in vault.', '#BD00FF', '2d ago')
+          ] %}
+          <div style="display:flex;gap:1rem;margin-bottom:{% if not loop.last %}1.5rem{% else %}0{% endif %};padding-bottom:{% if not loop.last %}1.5rem{% else %}0{% endif %};border-bottom:{% if not loop.last %}1px solid rgba(0,255,65,0.08){% else %}none{% endif %};">
+            <div style="width:38px;height:38px;border:1px solid {{ color }};background:rgba({{ '0,194,255' if color == '#00C2FF' else ('0,255,65' if color == '#00FF41' else '189,0,255') }},0.1);display:flex;align-items:center;justify-content:center;color:{{ color }};font-size:1.05rem;text-shadow:0 0 10px {{ color }};box-shadow:0 0 8px {{ color }}22;flex-shrink:0;">
+              <i class="bi {{ icon }}"></i>
+            </div>
+            <div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span style="font-family:'Orbitron',monospace;font-size:0.72rem;color:#e0ffe0;letter-spacing:0.08em;">{{ label }}</span>
+                <span style="font-family:'Share Tech Mono',monospace;font-size:0.62rem;padding:2px 8px;border:1px solid {{ color }}55;color:{{ color }};background:{{ color }}15;">VERIFIED</span>
+              </div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:0.78rem;color:rgba(180,255,210,0.6);margin-bottom:3px;">{{ msg }}</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:rgba(0,255,65,0.3);"><i class="bi bi-clock me-1"></i>{{ time }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- System Health -->
+    <div class="col-lg-4">
+      <div style="background:rgba(0,8,0,0.9);border:1px solid rgba(189,0,255,0.2);position:relative;overflow:hidden;height:100%;">
+        <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#BD00FF,transparent);opacity:0.5;"></div>
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid rgba(189,0,255,0.1);">
+          <span style="font-family:'Orbitron',monospace;font-size:0.72rem;color:#BD00FF;letter-spacing:0.12em;">
+            <i class="bi bi-shield-check me-2"></i>SYSTEM HEALTH
+          </span>
+        </div>
+        <div style="padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:0.75rem;">
+          {% for icon, label, status, color in [
+            ('bi-lock-fill',       'END-TO-END ENCRYPT.', 'ACTIVE',   '#00FF41'),
+            ('bi-hdd-network-fill','BLOCKCHAIN NETWORK',  'SYNCING',  '#00FF41'),
+            ('bi-key-fill',        'LOCAL KEY VAULT',     'SECURED',  '#00FF41'),
+            ('bi-shield-lock-fill','DIGITAL SIGNATURES',  'VERIFIED', '#00C2FF')
+          ] %}
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:0.65rem 0.9rem;background:rgba(0,0,0,0.5);border:1px solid rgba(0,255,65,0.1);margin-bottom:2px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:30px;height:30px;border:1px solid {{ color }}55;background:rgba({{ '0,194,255' if color == '#00C2FF' else ('0,255,65' if color == '#00FF41' else '189,0,255') }},0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="bi {{ icon }}" style="color:{{ color }};font-size:0.85rem;text-shadow:0 0 8px {{ color }};"></i>
+              </div>
+              <span style="font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:rgba(200,240,220,0.75);letter-spacing:0.04em;">{{ label }}</span>
+            </div>
+            <span style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;padding:2px 10px;border:1px solid {{ color }}66;color:{{ color }};background:{{ color }}15;">{{ status }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.CURRENT_USER = "{{ username }}";
+
+(async () => {
+  try {
+    const [msgRes, blockRes, userRes] = await Promise.all([
+      fetch('/api/messages/history'),
+      fetch('/api/blockchain/blocks'),
+      fetch('/api/users'),
+    ]);
+    if (msgRes.ok) { const d = await msgRes.json(); document.getElementById('stat-messages').textContent = d.messages.length; }
+    if (blockRes.ok) { const d = await blockRes.json(); document.getElementById('stat-blocks').textContent = d.blocks.length; }
+    if (userRes.ok) { const d = await userRes.json(); document.getElementById('stat-contacts').textContent = d.users.length; }
+  } catch(e) {}
+
+  // Key status check
+  const savedPub = localStorage.getItem(`secure_msg_pub_key_{{ username }}`);
+  const badge = document.getElementById('key-status-badge');
+  if (savedPub && badge) {
+    badge.style.border = '1px solid rgba(0,255,65,0.4)';
+    badge.style.color = '#00FF41';
+    badge.style.background = 'rgba(0,255,65,0.06)';
+    badge.innerHTML = '<i class="bi bi-shield-fill-check me-1"></i>KEYS ACTIVE';
+  }
+})();
+</script>
+{% endblock %}

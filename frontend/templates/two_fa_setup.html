@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Setup 2FA — SecureMsg Blockchain{% endblock %}
+
+{% block content %}
+<div class="auth-page-wrapper">
+  <div class="auth-card" style="max-width:480px;">
+
+    <div class="text-center mb-4">
+      <div style="width:72px;height:72px;background:linear-gradient(135deg,#22C55E22,#00C2FF22);border:2px solid #22C55E44;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="bi bi-qr-code-scan" style="font-size:2rem;color:#22C55E;"></i>
+      </div>
+      <h2 class="fw-bold text-light mb-1">Enable Two-Factor Auth</h2>
+      <p class="text-muted small">Scan the QR code with Google Authenticator or Authy</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ 'danger' if cat=='danger' else 'success' }} alert-dismissible fade show py-2 small">
+          {{ msg }}<button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <!-- Step 1: QR Code -->
+    <div class="card-cyber mb-4 text-center p-3">
+      <p class="small text-muted mb-2 fw-semibold">STEP 1 — Scan this QR code</p>
+      <img src="data:image/png;base64,{{ qr_b64 }}" alt="2FA QR Code"
+           style="width:200px;height:200px;border-radius:12px;border:2px solid #00C2FF33;display:block;margin:0 auto;">
+    </div>
+
+    <!-- Step 2: Manual key -->
+    <div class="card-cyber mb-4 p-3">
+      <p class="small text-muted mb-2 fw-semibold">STEP 2 — Or enter manually</p>
+      <code id="totp-secret-display"
+            style="font-family:var(--font-mono);font-size:0.85rem;color:#00C2FF;word-break:break-all;cursor:pointer;"
+            onclick="copySecret(this)" title="Click to copy">
+        {{ secret }}
+      </code>
+      <div class="text-muted" style="font-size:0.7rem;margin-top:6px;">
+        <i class="bi bi-clipboard me-1"></i>Click to copy secret key
+      </div>
+    </div>
+
+    <!-- Step 3: Confirm code -->
+    <form method="POST" action="/2fa/enable">
+      <div class="mb-3">
+        <label class="form-label text-muted small fw-semibold">STEP 3 — Enter 6-digit code to confirm</label>
+        <input type="text" name="code" class="form-control form-control-cyber text-center fw-bold"
+               style="font-size:1.5rem;letter-spacing:0.4rem;font-family:var(--font-mono);"
+               placeholder="______" maxlength="6" pattern="\d{6}" required autofocus>
+      </div>
+      <button type="submit" class="btn btn-cyber-primary w-100 py-2 fw-semibold">
+        <i class="bi bi-shield-check me-2"></i>Activate 2FA
+      </button>
+    </form>
+
+    <div class="text-center mt-3">
+      <a href="/profile" class="text-muted small">
+        <i class="bi bi-arrow-left me-1"></i>Cancel, back to profile
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function copySecret(el) {
+  navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+    const orig = el.style.color;
+    el.style.color = '#22C55E';
+    setTimeout(() => el.style.color = orig, 1200);
+  });
+}
+document.querySelector('input[name=code]').addEventListener('input', function() {
+  this.value = this.value.replace(/\D/g,'').substring(0,6);
+});
+</script>
+{% endblock %}

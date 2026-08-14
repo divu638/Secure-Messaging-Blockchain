@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+{% block title %}[INITIALIZE AGENT] — SecureMsg Blockchain{% endblock %}
+
+{% block extra_head %}
+<style>
+  @keyframes floatY { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+  @keyframes rotateRing { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+  @keyframes scanDown { 0%{top:-2%;opacity:0.8;} 100%{top:102%;opacity:0;} }
+
+  .auth-page {
+    min-height: calc(100vh - 84px);
+    display: flex;
+    align-items: stretch;
+  }
+
+  /* ── LEFT PANEL ── */
+  .auth-left {
+    flex: 1;
+    min-width: 0;
+    background: linear-gradient(145deg, #000d18 0%, #001428 45%, #00091a 100%);
+    border-right: 1px solid rgba(0,194,255,0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .auth-left::before {
+    content:''; position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(0,194,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,194,255,0.05) 1px, transparent 1px);
+    background-size: 36px 36px;
+    pointer-events:none;
+  }
+  .scan-beam {
+    position:absolute; left:0; right:0; height:1px;
+    background: linear-gradient(90deg,transparent,rgba(0,194,255,0.7),rgba(0,255,65,0.4),transparent);
+    animation: scanDown 5s linear infinite;
+    pointer-events:none; z-index:1;
+  }
+
+  /* ── RIGHT PANEL ── */
+  .auth-right {
+    flex: 1;
+    min-width: 0;
+    background: linear-gradient(160deg, #000408 0%, #000c10 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 2rem;
+    overflow-y: auto;
+    position: relative;
+  }
+  .auth-right::after {
+    content:''; position:absolute;
+    width:600px; height:600px; border-radius:50%;
+    background: radial-gradient(circle, rgba(0,194,255,0.04) 0%, transparent 65%);
+    top:50%; left:50%; transform:translate(-50%,-50%);
+    pointer-events:none;
+  }
+
+  .form-card {
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .term-bar {
+    background: rgba(0,194,255,0.04);
+    border: 1px solid rgba(0,194,255,0.18);
+    border-bottom: none;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+
+  .form-box {
+    border: 1px solid rgba(0,194,255,0.18);
+    padding: 1.5rem 1.5rem;
+    background: rgba(0,8,15,0.85);
+    position: relative;
+  }
+  .form-box::before {
+    content:''; position:absolute;
+    top:0; left:0; right:0; height:1px;
+    background: linear-gradient(90deg, transparent, rgba(0,194,255,0.4), rgba(0,255,65,0.3), transparent);
+  }
+  .form-box::after {
+    content:''; position:absolute;
+    bottom:-1px; right:-1px;
+    width:20px; height:20px;
+    border-bottom:1px solid rgba(0,255,65,0.6);
+    border-right:1px solid rgba(0,255,65,0.6);
+  }
+
+  /* ── INPUTS — bright, clearly visible ── */
+  .f-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: rgba(0,194,255,0.65);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+  }
+  .f-label::before {
+    content:'';
+    display: inline-block;
+    width: 5px; height: 5px;
+    background: rgba(0,194,255,0.6);
+    clip-path: polygon(50% 0%,100% 50%,50% 100%,0% 50%);
+  }
+
+  .f-input {
+    display: block;
+    width: 100%;
+    background: rgba(0,20,35,0.95);
+    border: 1px solid rgba(0,194,255,0.35);
+    color: #e0f8ff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.88rem;
+    padding: 0.62rem 0.85rem;
+    outline: none;
+    caret-color: #00C2FF;
+    transition: all 0.25s;
+    letter-spacing: 0.02em;
+    box-sizing: border-box;
+  }
+  .f-input::placeholder {
+    color: rgba(0,194,255,0.3);
+    font-size: 0.82rem;
+  }
+  .f-input:focus {
+    border-color: #00C2FF;
+    background: rgba(0,30,52,0.98);
+    color: #ffffff;
+    box-shadow: 0 0 0 1px rgba(0,194,255,0.2), 0 0 20px rgba(0,194,255,0.08);
+  }
+
+  /* two col grid */
+  .f-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+    margin-bottom: 0.85rem;
+  }
+  .f-group { margin-bottom: 0.85rem; }
+
+  /* ── SUBMIT BUTTON ── */
+  .btn-submit {
+    display: block;
+    width: 100%;
+    padding: 0.82rem;
+    background: linear-gradient(135deg, rgba(0,194,255,0.08), rgba(0,255,65,0.05));
+    border: 1px solid #00C2FF;
+    color: #00C2FF;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.88rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+    text-align: center;
+    margin-top: 0.25rem;
+  }
+  .btn-submit::after {
+    content:''; position:absolute; top:0; left:-100%;
+    width:100%; height:100%;
+    background: linear-gradient(90deg,transparent,rgba(0,194,255,0.15),rgba(0,255,65,0.1),transparent);
+    transition: left 0.5s;
+  }
+  .btn-submit:hover::after { left:100%; }
+  .btn-submit:hover {
+    border-color: #00FF41; color: #00FF41;
+    box-shadow: 0 0 25px rgba(0,194,255,0.2);
+    text-shadow: 0 0 10px #00C2FF;
+  }
+
+  .divider {
+    display: flex; align-items: center;
+    margin: 0.9rem 0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.58rem;
+    color: rgba(0,194,255,0.22);
+    letter-spacing: 0.1em;
+  }
+  .divider::before,.divider::after {
+    content:''; flex:1; height:1px;
+    background: rgba(0,194,255,0.1);
+    margin: 0 10px;
+  }
+
+  .btn-google {
+    display: flex;
+    width: 100%;
+    padding: 0.62rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.5);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    transition: all 0.2s;
+    clip-path: polygon(7px 0%, 100% 0%, calc(100% - 7px) 100%, 0% 100%);
+  }
+  .btn-google:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.85);
+  }
+
+  /* ── STEP INDICATOR ── */
+  .step-item {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 0.55rem;
+  }
+  .step-num {
+    width: 22px; height: 22px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', monospace; font-size: 0.58rem; font-weight: 700;
+    border: 1px solid;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 820px) {
+    .auth-page { flex-direction: column; }
+    .auth-left {
+      flex: none; min-height: 260px;
+      border-right: none;
+      border-bottom: 1px solid rgba(0,194,255,0.2);
+      padding: 2rem 1.5rem;
+    }
+    .auth-right { flex: none; padding: 2rem 1.5rem; }
+    .form-card { max-width: 100%; }
+  }
+  @media (max-width: 500px) {
+    .f-row { grid-template-columns: 1fr; }
+    .auth-left { padding: 1.5rem 1rem; min-height: auto; }
+    .auth-right { padding: 1.5rem 1rem; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+
+  <!-- ══ LEFT — BRAND ══ -->
+  <div class="auth-left">
+    <div class="scan-beam"></div>
+
+    <!-- Animated icon -->
+    <div style="position:relative;margin-bottom:1.75rem;animation:floatY 5s ease-in-out infinite;">
+      <div style="width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;">
+        <div style="position:absolute;inset:0;border:1px dashed rgba(0,194,255,0.35);border-radius:50%;animation:rotateRing 12s linear infinite;"></div>
+        <div style="position:absolute;inset:12px;border:1px solid rgba(0,255,65,0.2);border-radius:50%;animation:rotateRing 7s linear infinite reverse;"></div>
+        <div style="width:70px;height:70px;background:linear-gradient(135deg,rgba(0,194,255,0.12),rgba(0,255,65,0.08));border:1px solid rgba(0,194,255,0.5);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 0 25px rgba(0,194,255,0.18);">
+          <i class="bi bi-person-plus-fill" style="font-size:2rem;background:linear-gradient(135deg,#00C2FF,#00FF41);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 12px rgba(0,194,255,0.5));"></i>
+          <div style="position:absolute;top:-2px;left:-2px;width:10px;height:10px;border-top:2px solid #00C2FF;border-left:2px solid #00C2FF;"></div>
+          <div style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;border-top:2px solid #00FF41;border-right:2px solid #00FF41;"></div>
+          <div style="position:absolute;bottom:-2px;left:-2px;width:10px;height:10px;border-bottom:2px solid #00FF41;border-left:2px solid #00FF41;"></div>
+          <div style="position:absolute;bottom:-2px;right:-2px;width:10px;height:10px;border-bottom:2px solid #00C2FF;border-right:2px solid #00C2FF;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Brand -->
+    <div style="text-align:center;margin-bottom:1.75rem;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(0,194,255,0.4);letter-spacing:0.2em;margin-bottom:4px;">&gt;_ NEW AGENT PROTOCOL</div>
+      <h1 style="font-family:'Orbitron',monospace;font-size:1.45rem;font-weight:900;letter-spacing:0.1em;margin:0 0 5px;background:linear-gradient(90deg,#00C2FF,#00FF41);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">SECUREMSG</h1>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;color:rgba(0,194,255,0.5);">REGISTER TO THE SECURE NETWORK</div>
+    </div>
+
+    <!-- Init steps -->
+    <div style="width:100%;max-width:250px;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:rgba(0,194,255,0.3);letter-spacing:0.12em;margin-bottom:0.85rem;">// INITIALIZATION STEPS</div>
+      <div class="step-item">
+        <div class="step-num" style="border-color:#BD00FF;color:#BD00FF;">01</div>
+        <div style="flex:1;height:1px;background:rgba(189,0,255,0.2);"></div>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:rgba(220,185,255,0.65);">Create identity</span>
+      </div>
+      <div style="width:1px;height:10px;background:rgba(0,194,255,0.1);margin:0 11px;"></div>
+      <div class="step-item">
+        <div class="step-num" style="border-color:#00C2FF;color:#00C2FF;">02</div>
+        <div style="flex:1;height:1px;background:rgba(0,194,255,0.2);"></div>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:rgba(180,230,255,0.65);">Generate RSA keys</span>
+      </div>
+      <div style="width:1px;height:10px;background:rgba(0,194,255,0.1);margin:0 11px;"></div>
+      <div class="step-item">
+        <div class="step-num" style="border-color:#00FF41;color:#00FF41;">03</div>
+        <div style="flex:1;height:1px;background:rgba(0,255,65,0.2);"></div>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:rgba(180,255,205,0.65);">Join blockchain</span>
+      </div>
+      <div style="width:1px;height:10px;background:rgba(0,194,255,0.1);margin:0 11px;"></div>
+      <div class="step-item">
+        <div class="step-num" style="border-color:#FFB300;color:#FFB300;">04</div>
+        <div style="flex:1;height:1px;background:rgba(255,179,0,0.2);"></div>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:rgba(255,232,185,0.65);">Encrypted comms</span>
+      </div>
+    </div>
+
+    <div style="position:absolute;bottom:1.2rem;left:0;right:0;text-align:center;font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:rgba(0,194,255,0.15);letter-spacing:0.1em;">
+      ZERO-KNOWLEDGE &nbsp;·&nbsp; E2EE &nbsp;·&nbsp; BLOCKCHAIN BACKED
+    </div>
+  </div>
+
+  <!-- ══ RIGHT — REGISTER FORM ══ -->
+  <div class="auth-right">
+    <div class="form-card">
+
+      <!-- Terminal title bar -->
+      <div class="term-bar">
+        <span class="dot" style="background:#FF2D55;box-shadow:0 0 5px #FF2D55;"></span>
+        <span class="dot" style="background:#FFB300;box-shadow:0 0 5px #FFB300;"></span>
+        <span class="dot" style="background:#00C2FF;box-shadow:0 0 5px #00C2FF;"></span>
+        <span style="margin-left:8px;font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:rgba(0,194,255,0.3);letter-spacing:0.12em;">register_agent.exe</span>
+        <span style="margin-left:auto;font-family:'Share Tech Mono',monospace;font-size:0.52rem;color:rgba(0,194,255,0.18);">PID: 7331</span>
+      </div>
+
+      <!-- Form box -->
+      <div class="form-box">
+        <!-- Header -->
+        <div style="margin-bottom:1.2rem;">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(0,194,255,0.35);margin-bottom:6px;">
+            <span style="color:rgba(0,194,255,0.55);">root@securemsg:~$</span> ./register_agent --new --e2e
+          </div>
+          <h2 style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;letter-spacing:0.1em;margin:0 0 4px;background:linear-gradient(90deg,#00C2FF,#00FF41);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+            INITIALIZE AGENT
+          </h2>
+          <p style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(0,194,255,0.28);margin:0;">
+            [ Create a new secure identity on the network ]
+          </p>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" action="{{ url_for('register') }}">
+          <!-- Row: Name + Handle -->
+          <div class="f-row">
+            <div>
+              <div class="f-label">Display Name</div>
+              <input class="f-input" type="text" name="full_name" id="full_name"
+                placeholder="Your full name" required>
+            </div>
+            <div>
+              <div class="f-label">Agent Handle</div>
+              <input class="f-input" type="text" name="username" id="username"
+                placeholder="username" required>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="f-group">
+            <div class="f-label">Secure Channel (Email)</div>
+            <input class="f-input" type="email" name="email" id="email"
+              placeholder="agent@domain.xyz" required>
+          </div>
+
+          <!-- Row: Passwords -->
+          <div class="f-row" style="margin-bottom:1.2rem;">
+            <div>
+              <div class="f-label">Passphrase</div>
+              <input class="f-input" type="password" name="password" id="password"
+                placeholder="Min 8 characters" required>
+            </div>
+            <div>
+              <div class="f-label">Confirm</div>
+              <input class="f-input" type="password" name="confirm_password" id="confirm_password"
+                placeholder="Repeat passphrase" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit">
+            <i class="bi bi-cpu-fill" style="margin-right:8px;"></i>REGISTER CREDENTIALS
+          </button>
+        </form>
+
+        <div class="divider">// OR //</div>
+
+        <a href="{{ url_for('google_login') }}" class="btn-google">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width:14px;height:14px;">
+          REGISTER WITH GOOGLE
+        </a>
+      </div>
+
+      <!-- Footer -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1rem;padding:0 2px;">
+        <span style="font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:rgba(0,194,255,0.25);">
+          Already registered? &nbsp;<a href="{{ url_for('login') }}" style="color:#00FF41;text-decoration:none;"
+            onmouseover="this.style.textShadow='0 0 8px #00FF41'" onmouseout="this.style.textShadow='none'">
+            ACCESS TERMINAL &rarr;</a>
+        </span>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span style="width:5px;height:5px;border-radius:50%;background:#00C2FF;box-shadow:0 0 6px #00C2FF;animation:neonPulse 2s infinite;"></span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:rgba(0,194,255,0.22);">SECURE</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Blockchain Secure Messaging System — End-to-end encrypted communication with blockchain integrity verification.">
+  <title>{% block title %}SecureMsg — Blockchain Messaging Platform{% endblock %}</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Inter + JetBrains Mono + Orbitron + Share Tech Mono -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+  <!-- Bootstrap 5 (for JS components we still use) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Our design system -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <!-- Cyber Hacker Theme -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/cyber.css') }}">
+
+  {% block extra_head %}{% endblock %}
+  <!-- Logo Node-Graph Styles -->
+  <style>
+    /* ── Logo container ── */
+    .navbar-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none !important;
+    }
+    .navbar-logo-icon {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+    }
+    .navbar-logo-text {
+      font-family: var(--font-sans);
+      font-size: 1.18rem;
+      font-weight: 800;
+      color: #e2e8f0;
+      letter-spacing: -0.03em;
+    }
+    .navbar-logo-text span {
+      background: linear-gradient(135deg, #00C2FF 0%, #22C55E 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    /* ── Node pulse animation ── */
+    @keyframes nodePulse {
+      0%, 100% { opacity: 1; r: 3; }
+      50%       { opacity: 0.5; r: 4.5; }
+    }
+    @keyframes pathFlow {
+      0%   { stroke-dashoffset: 60; }
+      100% { stroke-dashoffset: 0; }
+    }
+    @keyframes centerGlow {
+      0%, 100% { filter: drop-shadow(0 0 3px #00C2FF); }
+      50%       { filter: drop-shadow(0 0 8px #00C2FF) drop-shadow(0 0 16px rgba(0,194,255,0.5)); }
+    }
+    .logo-svg .node-pulse {
+      animation: nodePulse 2.4s ease-in-out infinite;
+    }
+    .logo-svg .node-pulse-2 {
+      animation: nodePulse 2.4s ease-in-out 0.8s infinite;
+    }
+    .logo-svg .node-pulse-3 {
+      animation: nodePulse 2.4s ease-in-out 1.6s infinite;
+    }
+    .logo-svg .path-flow {
+      stroke-dasharray: 30;
+      stroke-dashoffset: 30;
+      animation: pathFlow 1.8s linear infinite;
+    }
+    .logo-svg .path-flow-2 {
+      stroke-dasharray: 30;
+      stroke-dashoffset: 30;
+      animation: pathFlow 1.8s linear 0.6s infinite;
+    }
+    .logo-svg .path-flow-3 {
+      stroke-dasharray: 30;
+      stroke-dashoffset: 30;
+      animation: pathFlow 1.8s linear 1.2s infinite;
+    }
+    .logo-svg .center-glow {
+      animation: centerGlow 2s ease-in-out infinite;
+    }
+    /* Hover lift */
+    .navbar-logo:hover .logo-svg {
+      transform: scale(1.08);
+      transition: transform 0.25s ease;
+    }
+  </style>
+</head>
+<body>
+  <!-- Matrix Rain Canvas -->
+  <canvas id="matrix-canvas"></canvas>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       CYBER AWARENESS TICKER
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="awareness-ticker" role="marquee" aria-label="Security awareness messages" style="background:#000;border-bottom:1px solid rgba(255,45,85,0.3);">
+    <div class="ticker-track" id="ticker-track">
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#FF2D55;box-shadow:0 0 6px #FF2D55;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#FF2D55;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">⚠ PHISHING ALERT</span><span style="color:rgba(255,200,200,0.7);">Beware of fake emails impersonating trusted services.</span></span>
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#FFB300;box-shadow:0 0 6px #FFB300;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#FFB300;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">⚡ WARNING</span><span style="color:rgba(255,230,180,0.7);">Never share your OTP or passwords with anyone, ever.</span></span>
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#00C2FF;box-shadow:0 0 6px #00C2FF;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#00C2FF;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">● TIP</span><span style="color:rgba(180,230,255,0.7);">Always verify unknown links before clicking.</span></span>
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#FF2D55;box-shadow:0 0 6px #FF2D55;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#FF2D55;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">🔴 CRITICAL</span><span style="color:rgba(255,200,200,0.7);">Report suspicious activity to your security team immediately.</span></span>
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#00FF41;box-shadow:0 0 6px #00FF41;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#00FF41;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">✓ BEST PRACTICE</span><span style="color:rgba(180,255,200,0.7);">Enable Two-Factor Authentication on all accounts.</span></span>
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#FFB300;box-shadow:0 0 6px #FFB300;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#FFB300;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">⚡ REMINDER</span><span style="color:rgba(255,230,180,0.7);">Use strong, unique passwords — never reuse credentials.</span></span>
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#BD00FF;box-shadow:0 0 6px #BD00FF;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#BD00FF;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">■ SECURITY TIP</span><span style="color:rgba(220,180,255,0.7);">Keep your software and operating system up to date.</span></span>
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#00C2FF;box-shadow:0 0 6px #00C2FF;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#00C2FF;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">● PRIVACY</span><span style="color:rgba(180,230,255,0.7);">Avoid accessing sensitive data on public Wi-Fi networks.</span></span>
+      <!-- Duplicate for seamless loop -->
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#FF2D55;box-shadow:0 0 6px #FF2D55;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#FF2D55;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">⚠ PHISHING ALERT</span><span style="color:rgba(255,200,200,0.7);">Beware of fake emails impersonating trusted services.</span></span>
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#FFB300;box-shadow:0 0 6px #FFB300;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#FFB300;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">⚡ WARNING</span><span style="color:rgba(255,230,180,0.7);">Never share your OTP or passwords with anyone, ever.</span></span>
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#00C2FF;box-shadow:0 0 6px #00C2FF;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#00C2FF;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">● TIP</span><span style="color:rgba(180,230,255,0.7);">Always verify unknown links before clicking.</span></span>
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#FF2D55;box-shadow:0 0 6px #FF2D55;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#FF2D55;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">🔴 CRITICAL</span><span style="color:rgba(255,200,200,0.7);">Report suspicious activity to your security team immediately.</span></span>
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#00FF41;box-shadow:0 0 6px #00FF41;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#00FF41;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">✓ BEST PRACTICE</span><span style="color:rgba(180,255,200,0.7);">Enable Two-Factor Authentication on all accounts.</span></span>
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#FFB300;box-shadow:0 0 6px #FFB300;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#FFB300;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">⚡ REMINDER</span><span style="color:rgba(255,230,180,0.7);">Use strong, unique passwords — never reuse credentials.</span></span>
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#BD00FF;box-shadow:0 0 6px #BD00FF;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#BD00FF;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">■ SECURITY TIP</span><span style="color:rgba(220,180,255,0.7);">Keep your software and operating system up to date.</span></span>
+      <span class="ticker-item"><span style="width:6px;height:6px;border-radius:50%;background:#00C2FF;box-shadow:0 0 6px #00C2FF;display:inline-block;margin-right:4px;flex-shrink:0;"></span><span style="color:#00C2FF;font-weight:700;font-size:0.68rem;letter-spacing:0.1em;margin-right:6px;">● PRIVACY</span><span style="color:rgba(180,230,255,0.7);">Avoid accessing sensitive data on public Wi-Fi networks.</span></span>
+    </div>
+  </div>
+
+
+
+  <!-- ═══════════════════════════════════════════════════════════
+       NAVIGATION BAR
+       ═══════════════════════════════════════════════════════════ -->
+  <nav class="app-navbar" role="navigation" aria-label="Main navigation">
+    <div class="navbar-inner">
+
+      <!-- Logo -->
+      <a class="navbar-logo" href="{{ url_for('home') }}" aria-label="SecureMsg Home">
+        <div class="navbar-logo-icon">
+          <!-- Generated Image Logo -->
+          <img src="{{ url_for('static', filename='img/logo.png') }}" alt="SecureMsg Logo" style="width:38px;height:38px;object-fit:contain;border-radius:6px;box-shadow:0 0 12px rgba(0,194,255,0.4);transition:transform 0.25s ease;">
+        </div>
+        <span class="navbar-logo-text">Secure<span>Msg</span></span>
+      </a>
+
+      <!-- Nav Links -->
+      <ul class="navbar-links" id="navbar-links" role="list">
+        <li><a href="{{ url_for('home') }}" class="{% if request.endpoint == 'home' %}nav-link-active{% endif %}">Home</a></li>
+        <li><a href="{{ url_for('about') }}" class="{% if request.endpoint == 'about' %}nav-link-active{% endif %}">About</a></li>
+        {% if session.get('user_id') %}
+        <li><a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}nav-link-active{% endif %}">Dashboard</a></li>
+        <li><a href="{{ url_for('chat') }}" class="{% if request.endpoint == 'chat' %}nav-link-active{% endif %}">
+          <i class="bi bi-chat-dots-fill" style="font-size:0.85rem;"></i> Chat
+        </a></li>
+        <li><a href="{{ url_for('key_manager') }}" class="{% if request.endpoint == 'key_manager' %}nav-link-active{% endif %}">
+          <i class="bi bi-key-fill" style="font-size:0.85rem;"></i> Keys
+        </a></li>
+        <li><a href="{{ url_for('blockchain_ledger') }}" class="{% if request.endpoint == 'blockchain_ledger' %}nav-link-active{% endif %}">
+          <i class="bi bi-link-45deg" style="font-size:0.9rem;"></i> Ledger
+        </a></li>
+        {% endif %}
+      </ul>
+
+      <!-- Actions -->
+      <div class="navbar-actions">
+        {% if session.get('user_id') %}
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <a href="{{ url_for('profile') }}" class="btn btn-ghost btn-sm" style="display:flex;align-items:center;gap:6px;">
+              <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,rgba(0,194,255,0.3),rgba(34,197,94,0.2));border:1px solid rgba(0,194,255,0.3);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;color:#00C2FF;">
+                {{ session.get('full_name', 'U')[0] | upper }}
+              </div>
+              <span style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.85rem;">{{ session.get('full_name') }}</span>
+            </a>
+            <a href="{{ url_for('logout') }}" class="btn btn-ghost btn-sm" title="Sign out">
+              <i class="bi bi-box-arrow-right"></i>
+            </a>
+          </div>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="btn btn-ghost btn-sm">Login</a>
+          <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">Get Started</a>
+        {% endif %}
+      </div>
+
+      <!-- Mobile toggle -->
+      <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       FLASH MESSAGES
+       ═══════════════════════════════════════════════════════════ -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div style="position:relative;z-index:50;">
+    <div class="container" style="padding-top:0.75rem;">
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }}" role="alert">
+        {% if category == 'success' %}<i class="bi bi-check-circle-fill"></i>
+        {% elif category == 'danger' %}<i class="bi bi-exclamation-circle-fill"></i>
+        {% elif category == 'warning' %}<i class="bi bi-exclamation-triangle-fill"></i>
+        {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+        <span>{{ message }}</span>
+        <button class="alert-close" onclick="this.closest('.alert').remove()" aria-label="Close">&times;</button>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- ═══════════════════════════════════════════════════════════
+       PAGE CONTENT
+       ═══════════════════════════════════════════════════════════ -->
+  <main role="main" style="flex:1;position:relative;z-index:1;">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════════════════ -->
+  <footer class="app-footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Brand -->
+        <div>
+          <a class="navbar-logo" href="{{ url_for('home') }}" style="text-decoration:none;display:inline-flex;margin-bottom:0.75rem;">
+            <div class="navbar-logo-icon" style="width:28px;height:28px;">
+              <svg class="logo-svg" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:28px;height:28px;">
+                <defs>
+                  <radialGradient id="ngBgF" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#0d1f3c"/>
+                    <stop offset="100%" stop-color="#060d18"/>
+                  </radialGradient>
+                  <linearGradient id="ngE1F" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00C2FF" stop-opacity="0.9"/>
+                    <stop offset="100%" stop-color="#22C55E" stop-opacity="0.7"/>
+                  </linearGradient>
+                  <linearGradient id="ngCF" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00C2FF"/>
+                    <stop offset="100%" stop-color="#22C55E"/>
+                  </linearGradient>
+                  <filter id="ngGlowF">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="1.2" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                </defs>
+                <circle cx="19" cy="19" r="18" fill="url(#ngBgF)" stroke="rgba(0,194,255,0.18)" stroke-width="0.8"/>
+                <line x1="19" y1="19" x2="8" y2="10" stroke="url(#ngE1F)" stroke-width="1.4" stroke-linecap="round" filter="url(#ngGlowF)"/>
+                <line x1="19" y1="19" x2="30" y2="10" stroke="url(#ngE1F)" stroke-width="1.4" stroke-linecap="round" filter="url(#ngGlowF)"/>
+                <line x1="19" y1="19" x2="8"  y2="29" stroke="url(#ngE1F)" stroke-width="1.4" stroke-linecap="round" filter="url(#ngGlowF)"/>
+                <line x1="19" y1="19" x2="30" y2="29" stroke="url(#ngE1F)" stroke-width="1.4" stroke-linecap="round" filter="url(#ngGlowF)"/>
+                <circle cx="8"  cy="10" r="3" fill="#0d1f3c" stroke="#00C2FF" stroke-width="1.6" filter="url(#ngGlowF)"/>
+                <circle cx="30" cy="10" r="3" fill="#0d1f3c" stroke="#22C55E" stroke-width="1.6" filter="url(#ngGlowF)"/>
+                <circle cx="8"  cy="29" r="3" fill="#0d1f3c" stroke="#22C55E" stroke-width="1.6" filter="url(#ngGlowF)"/>
+                <circle cx="30" cy="29" r="3" fill="#0d1f3c" stroke="#00C2FF" stroke-width="1.6" filter="url(#ngGlowF)"/>
+                <circle cx="19" cy="19" r="5.5" fill="url(#ngCF)" filter="url(#ngGlowF)"/>
+                <circle cx="19" cy="19" r="3" fill="#060d18"/>
+                <circle cx="19" cy="19" r="1.4" fill="#00C2FF" opacity="0.9"/>
+              </svg>
+            </div>
+            <span class="navbar-logo-text">Secure<span>Msg</span></span>
+          </a>
+          <p class="footer-brand-desc">Enterprise-grade secure messaging powered by blockchain integrity verification and end-to-end encryption.</p>
+          <div style="display:flex;gap:0.5rem;margin-top:1rem;">
+            <span class="badge badge-emerald"><i class="bi bi-shield-check"></i> SOC 2 Ready</span>
+            <span class="badge badge-cyan"><i class="bi bi-lock"></i> E2EE</span>
+          </div>
+        </div>
+
+        <!-- Platform -->
+        <div>
+          <p class="footer-heading">Platform</p>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('home') }}#features">Features</a></li>
+            <li><a href="{{ url_for('home') }}#security">Security</a></li>
+            <li><a href="{{ url_for('home') }}#how-it-works">How It Works</a></li>
+            {% if session.get('user_id') %}
+            <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+            <li><a href="{{ url_for('chat') }}">Secure Chat</a></li>
+            <li><a href="{{ url_for('key_manager') }}">Key Manager</a></li>
+            <li><a href="{{ url_for('blockchain_ledger') }}">Blockchain Ledger</a></li>
+            {% endif %}
+          </ul>
+        </div>
+
+        <!-- Legal -->
+        <div>
+          <p class="footer-heading">Legal</p>
+          <ul class="footer-links">
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Data Processing</a></li>
+            <li><a href="#">Cookie Policy</a></li>
+          </ul>
+        </div>
+
+        <!-- Resources -->
+        <div>
+          <p class="footer-heading">Resources</p>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('about') }}">About</a></li>
+            <li><a href="#">Documentation</a></li>
+            <li><a href="https://github.com" target="_blank" rel="noopener">GitHub <i class="bi bi-box-arrow-up-right" style="font-size:0.7rem;"></i></a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Cyber Security Awareness</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copyright">© 2026 SecureMsg Blockchain Platform. All rights reserved. Built for secure enterprise communication.</p>
+        <div class="footer-badges">
+          <span class="badge badge-gray" style="font-size:0.68rem;"><i class="bi bi-shield-fill-check me-1"></i>AES-256</span>
+          <span class="badge badge-gray" style="font-size:0.68rem;"><i class="bi bi-link-45deg me-1"></i>Blockchain</span>
+          <span class="badge badge-gray" style="font-size:0.68rem;"><i class="bi bi-key-fill me-1"></i>RSA-2048</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MINING OVERLAY — 3D Block Mining Animation (global)
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="mining-overlay" id="mining-status-overlay">
+    <!-- Floating particles -->
+    <div class="mining-particles">
+      <div class="mining-particle"></div>
+      <div class="mining-particle"></div>
+      <div class="mining-particle"></div>
+      <div class="mining-particle"></div>
+      <div class="mining-particle"></div>
+      <div class="mining-particle"></div>
+    </div>
+
+    <!-- 3D Spinning Cube -->
+    <div class="mining-cube-scene" style="position:relative;">
+      <div class="mining-orbit-ring">
+        <div class="mining-orbit-particle"></div>
+        <div class="mining-orbit-particle purple"></div>
+      </div>
+      <div class="mining-cube">
+        <div class="mining-cube-face front">#0</div>
+        <div class="mining-cube-face back">#∞</div>
+        <div class="mining-cube-face left">PoW</div>
+        <div class="mining-cube-face right">SHA</div>
+        <div class="mining-cube-face top">⛏️</div>
+        <div class="mining-cube-face bottom">🔒</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <p style="font-size:1.05rem;font-weight:700;color:#fff;margin:0;letter-spacing:-0.02em;">Mining Block…</p>
+      <p id="mining-nonce-counter" style="font-size:0.78rem;color:var(--gray-400);font-family:var(--font-mono);margin:4px 0 0;"></p>
+    </div>
+
+    <!-- Animated progress bar -->
+    <div class="mining-progress-wrap">
+      <div class="mining-progress-bar"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       TOAST CONTAINER
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <!-- Socket.IO client -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/script.js') }}?v=3"></script>
+
+  <!-- Matrix Rain Script -->
+  <script>
+  (function() {
+    const canvas = document.getElementById('matrix-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノABCDEF0123456789#@$%&<>{}[]';
+    const fontSize = 14;
+    let columns = Math.floor(canvas.width / fontSize);
+    let drops = Array(columns).fill(0).map(() => Math.random() * -100);
+
+    function draw() {
+      // Stronger fade for a darker, deeper 3D background
+      ctx.fillStyle = 'rgba(0, 5, 10, 0.12)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.font = fontSize + 'px Share Tech Mono, monospace';
+
+      drops.forEach((y, i) => {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        const x = i * fontSize;
+
+        // 3D Glow effect for the leading drop (pops out)
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#00FF41';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(char, x, y * fontSize);
+
+        // Reset shadow for the trail (pushes it back in Z-space)
+        ctx.shadowBlur = 0;
+        
+        // Slightly darker trail color to add depth
+        ctx.fillStyle = '#00c233';
+        ctx.fillText(chars[Math.floor(Math.random() * chars.length)], x, (y - 1) * fontSize);
+
+        if (y * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        // Fall faster
+        drops[i] += 0.9;
+      });
+    }
+
+    // Faster frame rate
+    setInterval(draw, 33);
+  })();
+  </script>
+
+  <!-- ═══════ GLOBAL VAULT MODALS (available on every page) ═══════ -->
+
+  <!-- Setup Vault PIN Modal -->
+  <div class="modal fade" id="setupVaultModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="background: rgba(0,8,20,0.97); border: 1px solid rgba(189,0,255,0.5); box-shadow: 0 0 40px rgba(189,0,255,0.25);">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(189,0,255,0.2);">
+          <h5 class="modal-title" style="font-family:'Orbitron',monospace; color:#BD00FF; font-size:0.95rem; letter-spacing:0.1em;">
+            <i class="bi bi-shield-lock-fill me-2"></i>SECURE KEY VAULT — SETUP
+          </h5>
+        </div>
+        <div class="modal-body" style="color: rgba(255,255,255,0.8); font-family:'Share Tech Mono',monospace; font-size:0.85rem;">
+          <p style="color: rgba(200,200,255,0.7); margin-bottom:1.2rem; line-height:1.7;">
+            Your private key will be <strong style="color:#BD00FF;">encrypted</strong> and backed up to the server. The server <strong>cannot</strong> read it — only your PIN can unlock it.
+          </p>
+          <div class="mb-3">
+            <label class="form-label" style="color:#00C2FF; font-size:0.75rem; letter-spacing:0.08em;">SET VAULT PIN <span style="color:rgba(255,255,255,0.4);">(min 6 characters)</span></label>
+            <input type="password" id="vault-pin-input" class="form-control" autocomplete="new-password"
+              style="background:rgba(0,0,0,0.6); border:1px solid rgba(0,194,255,0.4); color:#00C2FF; font-family:monospace; letter-spacing:0.15em;"
+              placeholder="Enter PIN...">
+          </div>
+          <div id="vault-pin-error" style="display:none; color:#FF2D55; font-size:0.78rem; margin-top:-0.5rem; margin-bottom:0.8rem;">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>PIN must be at least 6 characters.
+          </div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid rgba(189,0,255,0.2); gap:0.75rem;">
+          <button type="button" id="cancel-vault-setup-btn"
+            style="font-family:'Share Tech Mono',monospace; font-size:0.75rem; border:1px solid rgba(255,255,255,0.2); color:#aaa; background:transparent; padding:6px 16px; cursor:pointer;">
+            CANCEL
+          </button>
+          <button type="button" id="confirm-vault-setup-btn"
+            style="font-family:'Share Tech Mono',monospace; font-size:0.75rem; border:1px solid #BD00FF; color:#BD00FF; background:rgba(189,0,255,0.08); padding:6px 18px; cursor:pointer; transition:all 0.2s;">
+            <i class="bi bi-gear-fill me-1"></i>ENCRYPT &amp; GENERATE
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Unlock Vault PIN Modal -->
+  <div class="modal fade" id="unlockVaultModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content" style="background: rgba(0,8,20,0.97); border: 1px solid rgba(0,194,255,0.5); box-shadow: 0 0 40px rgba(0,194,255,0.2);">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(0,194,255,0.2);">
+          <h5 class="modal-title" style="font-family:'Orbitron',monospace; color:#00C2FF; font-size:0.95rem; letter-spacing:0.1em;">
+            <i class="bi bi-shield-fill-check me-2"></i>VAULT BACKUP FOUND
+          </h5>
+        </div>
+        <div class="modal-body" style="color: rgba(255,255,255,0.8); font-family:'Share Tech Mono',monospace; font-size:0.85rem;">
+          <p style="color: rgba(200,200,255,0.7); margin-bottom:1.2rem; line-height:1.7;">
+            An encrypted key backup exists on the server. Enter your Vault PIN to restore your keys and decrypt your messages.
+          </p>
+          <div class="mb-3">
+            <label class="form-label" style="color:#00C2FF; font-size:0.75rem; letter-spacing:0.08em;">VAULT PIN:</label>
+            <input type="password" id="vault-unlock-pin-input" class="form-control" autocomplete="current-password"
+              style="background:rgba(0,0,0,0.6); border:1px solid rgba(0,194,255,0.4); color:#00C2FF; font-family:monospace; letter-spacing:0.15em;"
+              placeholder="Enter PIN...">
+            <div id="unlock-error" style="display:none; color:#FF2D55; font-size:0.78rem; margin-top:0.5rem;">
+              <i class="bi bi-x-circle-fill me-1"></i>Wrong PIN or corrupted backup. Try again.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid rgba(0,194,255,0.2);">
+          <button type="button" id="confirm-vault-unlock-btn"
+            style="font-family:'Share Tech Mono',monospace; font-size:0.75rem; border:1px solid #00C2FF; color:#00C2FF; background:rgba(0,194,255,0.08); padding:6px 18px; cursor:pointer; transition:all 0.2s;">
+            <i class="bi bi-unlock-fill me-1"></i>UNLOCK &amp; RESTORE
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  {% block scripts %}{% endblock %}
+
+  <!-- Base UI Scripts -->
+  <script>
+  (function() {
+    // ── Mobile navbar toggle ──
+    const toggle = document.getElementById('navbar-toggle');
+    const links  = document.getElementById('navbar-links');
+    if (toggle && links) {
+      toggle.addEventListener('click', function() {
+        const open = links.classList.toggle('mobile-open');
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        toggle.querySelectorAll('span')[0].style.transform = open ? 'rotate(45deg) translate(5px,5px)' : '';
+        toggle.querySelectorAll('span')[1].style.opacity  = open ? '0' : '';
+        toggle.querySelectorAll('span')[2].style.transform = open ? 'rotate(-45deg) translate(5px,-5px)' : '';
+      });
+    }
+
+    // ── Reveal on scroll (IntersectionObserver) ──
+    const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+    if (revealEls.length) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      revealEls.forEach(el => io.observe(el));
+    }
+
+    // ── Toast helper ──
+    window.showToast = function(message, type = 'info', duration = 4000) {
+      const tc = document.getElementById('toast-container');
+      if (!tc) return;
+      const icons = { success: 'bi-check-circle-fill', danger: 'bi-exclamation-circle-fill', info: 'bi-info-circle-fill', warning: 'bi-exclamation-triangle-fill' };
+      const colors = { success: 'var(--emerald)', danger: 'var(--red)', info: 'var(--cyan)', warning: 'var(--amber)' };
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `<i class="bi ${icons[type] || icons.info}" style="color:${colors[type] || colors.info};font-size:1.1rem;flex-shrink:0;"></i><span style="font-size:0.87rem;flex:1;">${message}</span><button onclick="this.closest('.toast').remove()" style="background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:1rem;flex-shrink:0;">&times;</button>`;
+      tc.appendChild(toast);
+      setTimeout(() => { toast.classList.add('hiding'); setTimeout(() => toast.remove(), 350); }, duration);
+    };
+
+    // ── Auto-dismiss flash alerts ──
+    document.querySelectorAll('.alert').forEach(el => {
+      setTimeout(() => { el.style.transition = 'opacity 0.4s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 6000);
+    });
+  })();
+  </script>
+
+</body>
+</html>

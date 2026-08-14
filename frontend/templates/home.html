@@ -1,0 +1,1226 @@
+{% extends "base.html" %}
+
+{% block title %}SecureMsg — Blockchain-Powered Secure Messaging{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* CYBERPUNK HOME OVERRIDES */
+  .how-section { 
+    background: rgba(0, 8, 0, 0.8) !important; 
+    border-top: 1px solid rgba(0,255,65,0.1);
+    border-bottom: 1px solid rgba(0,255,65,0.1);
+  }
+  .chat-preview-section { 
+    background: linear-gradient(180deg, transparent, rgba(6,13,24,0.4) 15%, rgba(6,13,24,0.4) 85%, transparent) !important; 
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+  .security-section { 
+    background: rgba(6, 13, 24, 0.4) !important; 
+    backdrop-filter: blur(24px); 
+    -webkit-backdrop-filter: blur(24px); 
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+
+  /* ── HERO SPLIT LAYOUT ─────────────────────────────────────────── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    padding: 6rem 0 4rem;
+  }
+  .hero-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+  @media (max-width: 900px) {
+    .hero-split { grid-template-columns: 1fr; gap: 3rem; }
+    .hero-right { display: none; }
+  }
+
+  /* ── Animated Cyber Phone Card ─── */
+  .hero-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  .cyber-device {
+    position: relative;
+    width: 280px;
+    animation: deviceFloat 5s ease-in-out infinite;
+  }
+  @keyframes deviceFloat {
+    0%, 100% { transform: translateY(0px) rotate(-2deg); }
+    50% { transform: translateY(-18px) rotate(2deg); }
+  }
+  .device-frame {
+    background: linear-gradient(145deg, #0d1f3c, #060d18);
+    border: 1.5px solid rgba(0,194,255,0.35);
+    border-radius: 24px;
+    padding: 1.5rem 1.25rem;
+    box-shadow:
+      0 0 0 1px rgba(0,255,65,0.08),
+      0 0 40px rgba(0,194,255,0.15),
+      0 0 80px rgba(0,194,255,0.06),
+      inset 0 0 30px rgba(0,194,255,0.03);
+    position: relative;
+    overflow: hidden;
+  }
+  .device-frame::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00C2FF, #00FF41, transparent);
+    animation: scanLine 3s ease-in-out infinite;
+  }
+  @keyframes scanLine {
+    0% { opacity: 0; transform: translateX(-100%); }
+    50% { opacity: 1; }
+    100% { opacity: 0; transform: translateX(100%); }
+  }
+  .device-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(0,194,255,0.15);
+  }
+  .device-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: #00C2FF;
+    letter-spacing: 0.12em;
+  }
+  .device-status {
+    display: flex; gap: 5px;
+  }
+  .device-status span {
+    width: 7px; height: 7px; border-radius: 50%;
+  }
+  .chat-msg {
+    margin-bottom: 0.6rem;
+    animation: msgAppear 0.4s ease both;
+  }
+  @keyframes msgAppear {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .chat-msg-bubble {
+    display: inline-block;
+    padding: 0.45rem 0.85rem;
+    border-radius: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.68rem;
+    max-width: 85%;
+    line-height: 1.5;
+  }
+  .chat-msg.sent { text-align: right; }
+  .chat-msg.sent .chat-msg-bubble {
+    background: rgba(0,194,255,0.12);
+    border: 1px solid rgba(0,194,255,0.25);
+    color: #00C2FF;
+    border-bottom-right-radius: 3px;
+  }
+  .chat-msg.received .chat-msg-bubble {
+    background: rgba(0,255,65,0.08);
+    border: 1px solid rgba(0,255,65,0.2);
+    color: rgba(0,255,65,0.8);
+    border-bottom-left-radius: 3px;
+  }
+  .chat-msg-lock {
+    font-size: 0.55rem;
+    color: rgba(0,255,65,0.5);
+    margin-top: 2px;
+  }
+  .msg-typing {
+    display: flex; gap: 4px; align-items: center; padding: 0.5rem 0;
+  }
+  .typing-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: rgba(0,194,255,0.5);
+    animation: typingBounce 1.2s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes typingBounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+    40% { transform: translateY(-5px); opacity: 1; }
+  }
+  .device-stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0.5rem; margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(0,194,255,0.15);
+  }
+  .d-stat {
+    background: rgba(0,194,255,0.05);
+    border: 1px solid rgba(0,194,255,0.12);
+    border-radius: 8px;
+    padding: 0.4rem 0.6rem;
+    text-align: center;
+  }
+  .d-stat-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #00C2FF;
+    display: block;
+  }
+  .d-stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem;
+    color: rgba(0,194,255,0.4);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── Glowing orbs around device ── */
+  .orb-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid;
+    animation: orbRing 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .orb-ring-1 {
+    width: 340px; height: 340px;
+    border-color: rgba(0,194,255,0.08);
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    animation-delay: 0s;
+  }
+  .orb-ring-2 {
+    width: 420px; height: 420px;
+    border-color: rgba(0,255,65,0.05);
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    animation-delay: -1.5s;
+  }
+  .orb-ring-3 {
+    width: 500px; height: 500px;
+    border-color: rgba(189,0,255,0.04);
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    animation-delay: -3s;
+  }
+  @keyframes orbRing {
+    0%, 100% { transform: translate(-50%,-50%) scale(1); opacity: 0.7; }
+    50% { transform: translate(-50%,-50%) scale(1.05); opacity: 1; }
+  }
+
+  /* ── Floating tech badges ── */
+  .tech-badge-float {
+    position: absolute;
+    background: rgba(6,13,24,0.9);
+    border: 1px solid rgba(0,194,255,0.3);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: #00C2FF;
+    white-space: nowrap;
+    box-shadow: 0 0 15px rgba(0,194,255,0.15);
+    animation: badgeFloat 4s ease-in-out infinite;
+  }
+  .tech-badge-float.green { border-color: rgba(0,255,65,0.3); color: #00FF41; box-shadow: 0 0 15px rgba(0,255,65,0.1); }
+  .tech-badge-float.purple { border-color: rgba(189,0,255,0.3); color: #BD00FF; box-shadow: 0 0 15px rgba(189,0,255,0.1); }
+  .tbf-1 { top: 5%; right: -15%; animation-delay: 0s; }
+  .tbf-2 { bottom: 20%; left: -20%; animation-delay: -2s; }
+  .tbf-3 { bottom: 5%; right: -10%; animation-delay: -1s; }
+  @keyframes badgeFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+
+  /* ── Stats counter row ── */
+  .hero-stats {
+    display: flex; gap: 2rem; flex-wrap: wrap;
+    margin: 2rem 0;
+    padding: 1.25rem 1.5rem;
+    background: rgba(0,194,255,0.04);
+    border: 1px solid rgba(0,194,255,0.1);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+  }
+  .h-stat {
+    display: flex; flex-direction: column;
+    gap: 2px;
+  }
+  .h-stat-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #00C2FF;
+    line-height: 1;
+  }
+  .h-stat-val.green { color: #00FF41; }
+  .h-stat-val.purple { color: #BD00FF; }
+  .h-stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: rgba(200,220,255,0.4);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .h-stat-divider {
+    width: 1px;
+    background: rgba(0,194,255,0.15);
+    align-self: stretch;
+  }
+
+  /* ── 3D Hero Grid & Ambient Background ─────────────────────────── */
+  .ambient-orbs {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    pointer-events: none; z-index: -1; overflow: hidden;
+  }
+  .ambient-orb {
+    position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.35;
+    animation: float 20s infinite alternate ease-in-out;
+  }
+  .orb-1 { width: 50vw; height: 50vw; background: rgba(0, 194, 255, 0.2); top: -10%; left: -10%; }
+  .orb-2 { width: 60vw; height: 60vw; background: rgba(34, 197, 94, 0.15); bottom: -20%; right: -10%; animation-delay: -5s; }
+  .orb-3 { width: 40vw; height: 40vw; background: rgba(139, 92, 246, 0.15); top: 40%; left: 50%; animation-delay: -10s; }
+
+  @keyframes float {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(8%, 8%) scale(1.1); }
+  }
+
+  .hero-3d-grid {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+    perspective: 1000px; overflow: hidden; z-index: 0; opacity: 0.4; pointer-events: none;
+  }
+  .hero-3d-grid-inner {
+    position: absolute; bottom: -30%; left: -50%; width: 200%; height: 200%;
+    background-image: 
+      linear-gradient(rgba(0, 194, 255, 0.25) 1.5px, transparent 1.5px),
+      linear-gradient(90deg, rgba(0, 194, 255, 0.25) 1.5px, transparent 1.5px);
+    background-size: 60px 60px;
+    transform: rotateX(75deg); transform-origin: center bottom;
+    animation: grid-move 8s linear infinite;
+    mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%);
+    -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%);
+  }
+  @keyframes grid-move {
+    0% { transform: rotateX(75deg) translateY(0); }
+    100% { transform: rotateX(75deg) translateY(60px); }
+  }
+
+
+  /* ── Zigzag How-It-Works ───────────────────────────────────────── */
+  .zigzag-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .zigzag-row {
+    display: grid;
+    grid-template-columns: 1fr 64px 1fr;
+    align-items: center;
+    min-height: 140px;
+    position: relative;
+  }
+  /* Odd rows: card on LEFT, connector center, empty right */
+  .zigzag-row.left .zz-card  { grid-column: 1; }
+  .zigzag-row.left .zz-conn  { grid-column: 2; }
+  .zigzag-row.left .zz-empty { grid-column: 3; }
+  /* Even rows: empty left, connector center, card on RIGHT */
+  .zigzag-row.right .zz-empty { grid-column: 1; }
+  .zigzag-row.right .zz-conn  { grid-column: 2; }
+  .zigzag-row.right .zz-card  { grid-column: 3; }
+
+  .zz-card {
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    position: relative;
+    transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+    backdrop-filter: blur(10px);
+  }
+  .zz-card:hover {
+    border-color: rgba(0,194,255,0.35);
+    box-shadow: 0 8px 32px rgba(0,194,255,0.08);
+    transform: translateY(-3px);
+  }
+  .zz-card.alert-card {
+    border-color: rgba(239,68,68,0.25);
+  }
+  .zz-card.alert-card:hover {
+    border-color: rgba(239,68,68,0.5);
+    box-shadow: 0 8px 32px rgba(239,68,68,0.1);
+  }
+
+  .zz-step-top {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-bottom: 0.65rem;
+  }
+  .zz-num {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(0,194,255,0.18), rgba(0,194,255,0.06));
+    border: 1.5px solid rgba(0,194,255,0.35);
+    color: #00C2FF;
+    font-size: 0.9rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+  }
+  .zz-num.red-num {
+    background: linear-gradient(135deg, rgba(239,68,68,0.18), rgba(239,68,68,0.06));
+    border-color: rgba(239,68,68,0.40);
+    color: #ef4444;
+  }
+  .zz-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.01em;
+  }
+  .zz-desc {
+    font-size: 0.86rem;
+    color: var(--gray-400);
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  /* Red alert indicator */
+  .alert-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #ef4444;
+    margin-top: 0.6rem;
+  }
+  .alert-dot-pulse {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    box-shadow: 0 0 0 0 rgba(239,68,68,0.6);
+    animation: pulse-red 1.8s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse-red {
+    0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+    60%  { box-shadow: 0 0 0 7px rgba(239,68,68,0); }
+    100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+  }
+
+  /* Connector column — SVG zigzag arrows */
+  .zz-conn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 100%;
+    z-index: 1;
+  }
+  .zz-conn svg { display: block; }
+  .zz-empty { /* spacer */ }
+
+  /* Mobile: stack vertically */
+  @media (max-width: 680px) {
+    .zigzag-row {
+      grid-template-columns: 1fr !important;
+      grid-template-rows: auto auto;
+    }
+    .zigzag-row.left .zz-card,
+    .zigzag-row.right .zz-card  { grid-column: 1 !important; }
+    .zz-conn, .zz-empty { display: none !important; }
+  }
+
+  /* ── Blockchain alert badge ─────────────────────────────────────── */
+  .red-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 99px;
+    padding: 2px 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #ef4444;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0.55rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- No ambient orbs — matrix canvas from base.html already provides BG -->
+<!-- ═══════════════════════════════════════════════════════════════
+     HERO SECTION
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="hero" id="home">
+
+  <!-- Background accent glow -->
+  <div style="position:absolute;top:20%;left:-5%;width:45vw;height:45vw;background:radial-gradient(circle, rgba(0,194,255,0.07) 0%, transparent 70%);pointer-events:none;border-radius:50%;"></div>
+  <div style="position:absolute;bottom:0%;right:-5%;width:50vw;height:50vw;background:radial-gradient(circle, rgba(0,255,65,0.05) 0%, transparent 70%);pointer-events:none;border-radius:50%;"></div>
+
+  <div class="container" style="position:relative;z-index:1;">
+    <div class="hero-split">
+
+      <!-- LEFT: Text content -->
+      <div class="hero-left">
+
+        <!-- Live status badge -->
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 18px;border:1px solid rgba(0,255,65,0.3);background:rgba(0,255,65,0.05);margin-bottom:2rem;font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:rgba(0,255,65,0.7);letter-spacing:0.12em;border-radius:4px;backdrop-filter:blur(10px);">
+          <span style="width:7px;height:7px;border-radius:50%;background:#00FF41;box-shadow:0 0 8px #00FF41;animation:neonPulse 1.5s infinite;flex-shrink:0;"></span>
+          <span>SYSTEM ONLINE</span>
+          <span style="width:1px;height:12px;background:rgba(0,255,65,0.3);margin:0 2px;"></span>
+          <span style="color:rgba(0,255,65,0.45);">E2EE · BLOCKCHAIN · IPFS</span>
+        </div>
+
+        <!-- Main title with gradient -->
+        <h1 style="font-family:'Orbitron',monospace;font-weight:900;line-height:1.1;margin-bottom:1.25rem;">
+          <span style="display:block;font-size:clamp(1rem,2vw,1.1rem);letter-spacing:0.3em;color:rgba(0,194,255,0.6);font-weight:400;margin-bottom:0.5rem;">&gt;_ SECURE</span>
+          <span style="display:block;font-size:clamp(2.2rem,5vw,3.8rem);letter-spacing:0.04em;background:linear-gradient(135deg,#00FF41 0%,#00C2FF 50%,#BD00FF 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px rgba(0,194,255,0.3));">COMMS</span>
+          <span style="display:block;font-size:clamp(2.2rem,5vw,3.8rem);letter-spacing:0.04em;background:linear-gradient(135deg,#00C2FF 0%,#BD00FF 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px rgba(189,0,255,0.3));">PLATFORM</span>
+        </h1>
+
+        <p style="font-size:1rem;color:rgba(200,220,255,0.55);max-width:480px;margin-bottom:1.5rem;line-height:1.85;font-family:'Inter',sans-serif;">
+          Military-grade <strong style="color:rgba(0,194,255,0.8);">RSA-2048 encrypted</strong> messaging anchored on an immutable blockchain ledger. Built for operators who cannot afford compromise.
+        </p>
+
+        <!-- Stats row -->
+        <div class="hero-stats">
+          <div class="h-stat">
+            <span class="h-stat-val green" id="stat-enc">0</span>
+            <span class="h-stat-label">Blocks Mined</span>
+          </div>
+          <div class="h-stat-divider"></div>
+          <div class="h-stat">
+            <span class="h-stat-val" id="stat-bits">2048</span>
+            <span class="h-stat-label">RSA Key Bits</span>
+          </div>
+          <div class="h-stat-divider"></div>
+          <div class="h-stat">
+            <span class="h-stat-val purple">SHA-256</span>
+            <span class="h-stat-label">Hash Algorithm</span>
+          </div>
+          <div class="h-stat-divider"></div>
+          <div class="h-stat">
+            <span class="h-stat-val green">100%</span>
+            <span class="h-stat-label">E2EE Coverage</span>
+          </div>
+        </div>
+
+        <!-- CTA Button (single) -->
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem;">
+          {% if session.get('user_id') %}
+            <a href="{{ url_for('dashboard') }}" style="display:inline-flex;align-items:center;gap:10px;padding:1rem 2.5rem;background:linear-gradient(135deg,rgba(0,255,65,0.15),rgba(0,194,255,0.1));border:1px solid rgba(0,255,65,0.45);color:#00FF41;font-family:'Share Tech Mono',monospace;font-size:0.85rem;letter-spacing:0.15em;text-decoration:none;border-radius:4px;transition:all 0.25s;box-shadow:0 0 20px rgba(0,255,65,0.08);"
+              onmouseover="this.style.background='linear-gradient(135deg,rgba(0,255,65,0.25),rgba(0,194,255,0.15))';this.style.boxShadow='0 0 40px rgba(0,255,65,0.25),0 0 15px rgba(0,194,255,0.15)';this.style.transform='translateY(-3px)';"
+              onmouseout="this.style.background='linear-gradient(135deg,rgba(0,255,65,0.15),rgba(0,194,255,0.1))';this.style.boxShadow='0 0 20px rgba(0,255,65,0.08)';this.style.transform='translateY(0)';">
+              <i class="bi bi-grid-fill"></i> LAUNCH OPS CENTER
+            </a>
+          {% else %}
+            <a href="{{ url_for('register') }}" style="position:relative;display:inline-flex;align-items:center;gap:10px;padding:1rem 2.5rem;background:linear-gradient(135deg,rgba(0,255,65,0.12),rgba(0,194,255,0.08),rgba(189,0,255,0.06));border:1px solid rgba(0,255,65,0.5);color:#00FF41;font-family:'Share Tech Mono',monospace;font-size:0.88rem;letter-spacing:0.18em;text-decoration:none;border-radius:4px;transition:all 0.3s;box-shadow:0 0 25px rgba(0,255,65,0.1),inset 0 0 20px rgba(0,255,65,0.03);overflow:hidden;"
+              onmouseover="this.style.background='linear-gradient(135deg,rgba(0,255,65,0.22),rgba(0,194,255,0.14),rgba(189,0,255,0.08))';this.style.boxShadow='0 0 50px rgba(0,255,65,0.3),0 0 20px rgba(0,194,255,0.15)';this.style.transform='translateY(-3px)';this.style.borderColor='rgba(0,255,65,0.8)';"
+              onmouseout="this.style.background='linear-gradient(135deg,rgba(0,255,65,0.12),rgba(0,194,255,0.08),rgba(189,0,255,0.06))';this.style.boxShadow='0 0 25px rgba(0,255,65,0.1),inset 0 0 20px rgba(0,255,65,0.03)';this.style.transform='translateY(0)';this.style.borderColor='rgba(0,255,65,0.5)';">
+              <i class="bi bi-shield-lock-fill" style="font-size:1rem;"></i>
+              GET STARTED — FREE
+              <i class="bi bi-arrow-right" style="font-size:0.85rem;opacity:0.7;"></i>
+            </a>
+          {% endif %}
+        </div>
+
+        <!-- Trust badges -->
+        <div style="display:flex;flex-wrap:wrap;gap:0.6rem;">
+          <span style="font-family:'Share Tech Mono',monospace;font-size:0.68rem;padding:4px 12px;border:1px solid rgba(0,255,65,0.2);color:rgba(0,255,65,0.55);letter-spacing:0.08em;border-radius:3px;background:rgba(0,255,65,0.03);"><i class="bi bi-shield-fill-check me-1" style="color:#00FF41;"></i>AES-256</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:0.68rem;padding:4px 12px;border:1px solid rgba(0,194,255,0.2);color:rgba(0,194,255,0.55);letter-spacing:0.08em;border-radius:3px;background:rgba(0,194,255,0.03);"><i class="bi bi-link-45deg me-1" style="color:#00C2FF;"></i>BLOCKCHAIN</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:0.68rem;padding:4px 12px;border:1px solid rgba(189,0,255,0.2);color:rgba(189,0,255,0.55);letter-spacing:0.08em;border-radius:3px;background:rgba(189,0,255,0.03);"><i class="bi bi-key-fill me-1" style="color:#BD00FF;"></i>RSA-2048</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:0.68rem;padding:4px 12px;border:1px solid rgba(255,179,0,0.2);color:rgba(255,179,0,0.55);letter-spacing:0.08em;border-radius:3px;background:rgba(255,179,0,0.03);"><i class="bi bi-hdd-network-fill me-1" style="color:#FFB300;"></i>IPFS</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:0.68rem;padding:4px 12px;border:1px solid rgba(255,59,48,0.2);color:rgba(255,59,48,0.55);letter-spacing:0.08em;border-radius:3px;background:rgba(255,59,48,0.03);"><i class="bi bi-ban me-1" style="color:#FF3B30;"></i>ZERO-TRUST</span>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Animated device mockup -->
+      <div class="hero-right">
+        <!-- Orb rings -->
+        <div class="orb-ring orb-ring-1"></div>
+        <div class="orb-ring orb-ring-2"></div>
+        <div class="orb-ring orb-ring-3"></div>
+
+        <!-- Floating tech badges -->
+        <div class="tech-badge-float tbf-1"><i class="bi bi-shield-lock-fill me-1"></i>E2EE Active</div>
+        <div class="tech-badge-float green tbf-2"><i class="bi bi-link-45deg me-1"></i>Block #<span id="hero-block-num">0</span></div>
+        <div class="tech-badge-float purple tbf-3"><i class="bi bi-hdd-network me-1"></i>IPFS Pinned</div>
+
+        <!-- Device mockup -->
+        <div class="cyber-device">
+          <div class="device-frame">
+            <div class="device-header">
+              <span class="device-title"><i class="bi bi-shield-lock-fill me-1"></i>SecureMsg</span>
+              <div class="device-status">
+                <span style="background:#00FF41;box-shadow:0 0 6px #00FF41;"></span>
+                <span style="background:#FFB300;box-shadow:0 0 6px #FFB300;"></span>
+                <span style="background:#FF3B30;box-shadow:0 0 6px #FF3B30;"></span>
+              </div>
+            </div>
+
+            <!-- Simulated chat preview (English) -->
+            <div id="hero-chat-demo">
+              <div class="chat-msg received">
+                <div class="chat-msg-bubble">Is this connection secure? 🔐</div>
+                <div class="chat-msg-lock"><i class="bi bi-shield-lock-fill"></i> RSA-OAEP encrypted</div>
+              </div>
+              <div class="chat-msg sent" style="animation-delay:0.3s;">
+                <div class="chat-msg-bubble">100% E2EE — locked on blockchain.</div>
+                <div class="chat-msg-lock" style="text-align:right;"><i class="bi bi-shield-check-fill"></i> Block verified</div>
+              </div>
+              <div class="chat-msg received" style="animation-delay:0.6s;">
+                <div class="chat-msg-bubble">Perfect. Mission secure! ✅</div>
+                <div class="chat-msg-lock"><i class="bi bi-hdd-network-fill"></i> IPFS pinned</div>
+              </div>
+              <div class="msg-typing">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+            </div>
+
+            <!-- Mini stats -->
+            <div class="device-stats">
+              <div class="d-stat">
+                <span class="d-stat-val" id="dev-blocks">0</span>
+                <span class="d-stat-label">Blocks</span>
+              </div>
+              <div class="d-stat" style="background:rgba(0,255,65,0.05);border-color:rgba(0,255,65,0.12);">
+                <span class="d-stat-val" style="color:#00FF41;">E2EE</span>
+                <span class="d-stat-label">Encrypted</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Animated counter script -->
+  <script>
+    (function() {
+      fetch('/api/blockchain/blocks').then(r => r.json()).then(d => {
+        const n = d.blocks ? d.blocks.length : 0;
+        document.getElementById('stat-enc').textContent = n;
+        document.getElementById('dev-blocks').textContent = n;
+        document.getElementById('hero-block-num').textContent = n;
+      }).catch(() => {});
+    })();
+  </script>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FEATURES SECTION
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="text-center mb-8" style="margin-bottom:3rem;">
+      <div class="section-tag reveal"><i class="bi bi-stars"></i> Platform Features</div>
+      <h2 class="section-heading reveal delay-100">Everything you need for<br>secure enterprise messaging</h2>
+      <p class="section-subheading reveal delay-200" style="margin:0 auto;">
+        Built on proven cryptographic standards and blockchain technology, SecureMsg provides complete communication security without sacrificing usability.
+      </p>
+    </div>
+
+    <div class="grid-3 tablet-2" style="gap:1.25rem;">
+
+      <!-- Card 1 -->
+      <div class="feature-card reveal delay-100">
+        <div class="feature-icon-wrap cyan">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <h3>End-to-End Encryption</h3>
+        <p>Every message is encrypted client-side using RSA-OAEP 2048-bit keys before transmission. Only the intended recipient can decrypt the content.</p>
+        <div style="margin-top:1rem;"><span class="badge badge-cyan">RSA-OAEP</span> <span class="badge badge-gray">Client-side</span></div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="feature-card reveal delay-200">
+        <div class="feature-icon-wrap emerald">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+        </div>
+        <h3>Blockchain Verification</h3>
+        <p>Each message is appended as a cryptographically linked block. SHA-256 Proof-of-Work ensures immutable audit trails that cannot be silently modified.</p>
+        <div style="margin-top:1rem;"><span class="badge badge-emerald">SHA-256</span> <span class="badge badge-gray">Immutable</span></div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="feature-card reveal delay-300">
+        <div class="feature-icon-wrap purple">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <h3>Secure Authentication</h3>
+        <p>Multi-factor authentication with bcrypt-hashed credentials ensures that only verified users gain access to the secure messaging platform.</p>
+        <div style="margin-top:1rem;"><span class="badge badge-gray">bcrypt</span> <span class="badge badge-gray">Session-based</span></div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="feature-card reveal delay-200">
+        <div class="feature-icon-wrap cyan">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+          </svg>
+        </div>
+        <h3>Encrypted File Sharing</h3>
+        <p>Upload and share documents with end-to-end encryption. Every file gets a unique cryptographic hash for integrity verification before and after delivery.</p>
+        <div style="margin-top:1rem;"><span class="badge badge-cyan">File Hash</span> <span class="badge badge-gray">AES-256</span></div>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="feature-card reveal delay-300">
+        <div class="feature-icon-wrap amber">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+        </div>
+        <h3>Digital Signatures</h3>
+        <p>Every message carries a cryptographic digital signature, allowing recipients to verify the authenticity and origin of all communications.</p>
+        <div style="margin-top:1rem;"><span class="badge badge-amber">ECDSA</span> <span class="badge badge-gray">Non-repudiation</span></div>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="feature-card reveal delay-400">
+        <div class="feature-icon-wrap red">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+        </div>
+        <h3>Security Audit Logs</h3>
+        <p>Comprehensive blockchain-backed audit trails record every message transmission, key exchange, and access event for compliance and forensic review.</p>
+        <div style="margin-top:1rem;"><span class="badge badge-red">Tamper-proof</span> <span class="badge badge-gray">Compliance</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HOW IT WORKS SECTION  — Zigzag Layout
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="section how-section" id="how-it-works">
+  <div class="container">
+    <div class="text-center" style="margin-bottom:3.5rem;">
+      <div class="section-tag reveal"><i class="bi bi-diagram-3"></i> Process</div>
+      <h2 class="section-heading reveal delay-100">How It Works</h2>
+      <p class="section-subheading reveal delay-200" style="margin:0 auto;">Six secure steps from authentication to verified message delivery</p>
+    </div>
+
+    <div class="zigzag-wrapper">
+
+      <!-- ─── Step 1 : LEFT ─── -->
+      <div class="zigzag-row left reveal delay-100">
+        <div class="zz-card">
+          <div class="zz-step-top">
+            <div class="zz-num">01</div>
+            <div class="zz-label">User Login</div>
+          </div>
+          <p class="zz-desc">Authenticate with bcrypt-verified credentials and establish a cryptographically signed secure session token.</p>
+        </div>
+        <div class="zz-conn">
+          <!-- Down-right arrow -->
+          <svg width="64" height="140" viewBox="0 0 64 140" fill="none">
+            <path d="M32 0 L32 60 Q32 80 52 80 L64 80" stroke="rgba(0,194,255,0.30)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+            <path d="M32 80 L32 140" stroke="rgba(0,194,255,0.15)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+            <circle cx="32" cy="80" r="4" fill="rgba(0,194,255,0.5)"/>
+          </svg>
+        </div>
+        <div class="zz-empty"></div>
+      </div>
+
+      <!-- ─── Step 2 : RIGHT ─── -->
+      <div class="zigzag-row right reveal delay-200">
+        <div class="zz-empty"></div>
+        <div class="zz-conn">
+          <!-- Down-left arrow -->
+          <svg width="64" height="140" viewBox="0 0 64 140" fill="none">
+            <path d="M32 0 L32 60 Q32 80 12 80 L0 80" stroke="rgba(139,92,246,0.35)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+            <path d="M32 80 L32 140" stroke="rgba(139,92,246,0.18)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+            <circle cx="32" cy="80" r="4" fill="rgba(139,92,246,0.55)"/>
+          </svg>
+        </div>
+        <div class="zz-card">
+          <div class="zz-step-top">
+            <div class="zz-num">02</div>
+            <div class="zz-label">Generate Keys</div>
+          </div>
+          <p class="zz-desc">RSA-OAEP 2048-bit key pair generated entirely client-side. Your private key never leaves your browser.</p>
+        </div>
+      </div>
+
+      <!-- ─── Step 3 : LEFT ─── -->
+      <div class="zigzag-row left reveal delay-100">
+        <div class="zz-card alert-card">
+          <div class="zz-step-top">
+            <div class="zz-num red-num">03</div>
+            <div class="zz-label">Encrypt Message</div>
+          </div>
+          <p class="zz-desc">Message encrypted client-side using the recipient's public key before any network transfer. Server never receives plaintext.</p>
+          <div class="alert-indicator">
+            <span class="alert-dot-pulse"></span> Critical Security Step
+          </div>
+        </div>
+        <div class="zz-conn">
+          <svg width="64" height="140" viewBox="0 0 64 140" fill="none">
+            <path d="M32 0 L32 60 Q32 80 52 80 L64 80" stroke="rgba(239,68,68,0.35)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+            <path d="M32 80 L32 140" stroke="rgba(239,68,68,0.18)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+            <circle cx="32" cy="80" r="4" fill="rgba(239,68,68,0.55)"/>
+          </svg>
+        </div>
+        <div class="zz-empty"></div>
+      </div>
+
+      <!-- ─── Step 4 : RIGHT ─── -->
+      <div class="zigzag-row right reveal delay-200">
+        <div class="zz-empty"></div>
+        <div class="zz-conn">
+          <svg width="64" height="140" viewBox="0 0 64 140" fill="none">
+            <path d="M32 0 L32 60 Q32 80 12 80 L0 80" stroke="rgba(34,197,94,0.35)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+            <path d="M32 80 L32 140" stroke="rgba(34,197,94,0.18)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+            <circle cx="32" cy="80" r="4" fill="rgba(34,197,94,0.55)"/>
+          </svg>
+        </div>
+        <div class="zz-card">
+          <div class="zz-step-top">
+            <div class="zz-num" style="background:linear-gradient(135deg,rgba(34,197,94,0.18),rgba(34,197,94,0.06));border-color:rgba(34,197,94,0.40);color:#22C55E;">04</div>
+            <div class="zz-label">Blockchain Record</div>
+          </div>
+          <p class="zz-desc">SHA-256 Proof-of-Work mines a new block and cryptographically links it to the immutable ledger chain.</p>
+          <span class="red-badge"><span class="alert-dot-pulse" style="width:6px;height:6px;"></span> Tamper-proof</span>
+        </div>
+      </div>
+
+      <!-- ─── Step 5 : LEFT ─── -->
+      <div class="zigzag-row left reveal delay-100">
+        <div class="zz-card">
+          <div class="zz-step-top">
+            <div class="zz-num" style="background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(245,158,11,0.06));border-color:rgba(245,158,11,0.40);color:#f59e0b;">05</div>
+            <div class="zz-label">Secure Delivery</div>
+          </div>
+          <p class="zz-desc">Encrypted ciphertext is delivered to the recipient alongside a blockchain verification receipt and digital signature.</p>
+        </div>
+        <div class="zz-conn">
+          <svg width="64" height="140" viewBox="0 0 64 140" fill="none">
+            <path d="M32 0 L32 60 Q32 80 52 80 L64 80" stroke="rgba(245,158,11,0.30)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+            <path d="M32 80 L32 140" stroke="rgba(245,158,11,0.15)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+            <circle cx="32" cy="80" r="4" fill="rgba(245,158,11,0.55)"/>
+          </svg>
+        </div>
+        <div class="zz-empty"></div>
+      </div>
+
+      <!-- ─── Step 6 : RIGHT ─── -->
+      <div class="zigzag-row right reveal delay-200">
+        <div class="zz-empty"></div>
+        <div class="zz-conn">
+          <!-- Final node — no line going down -->
+          <svg width="64" height="70" viewBox="0 0 64 70" fill="none">
+            <path d="M32 0 L32 30 Q32 50 12 50 L0 50" stroke="rgba(239,68,68,0.35)" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+            <circle cx="32" cy="50" r="4" fill="rgba(239,68,68,0.6)"/>
+            <circle cx="32" cy="50" r="9" fill="none" stroke="rgba(239,68,68,0.2)" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="zz-card alert-card">
+          <div class="zz-step-top">
+            <div class="zz-num red-num">06</div>
+            <div class="zz-label">Decrypt Message</div>
+          </div>
+          <p class="zz-desc">Recipient decrypts locally using their private key. The server never sees plaintext — zero-knowledge guaranteed.</p>
+          <div class="alert-indicator">
+            <span class="alert-dot-pulse"></span> Zero-Knowledge Verified
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /zigzag-wrapper -->
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECURE CHAT PREVIEW
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="section chat-preview-section" id="preview">
+  <div class="container">
+    <div class="text-center" style="margin-bottom:3rem;">
+      <div class="section-tag reveal"><i class="bi bi-chat-dots"></i> Interface Preview</div>
+      <h2 class="section-heading reveal delay-100">Familiar. Secure. Professional.</h2>
+      <p class="section-subheading reveal delay-200" style="margin:0 auto;">A messaging experience as intuitive as the tools your team already uses — with military-grade security underneath.</p>
+    </div>
+
+    <div class="reveal delay-100">
+      <div class="chat-layout" style="height:540px;">
+
+        <!-- Sidebar -->
+        <div class="chat-sidebar">
+          <div class="chat-sidebar-header">
+            <p class="chat-sidebar-title">Messages</p>
+            <div class="chat-search">
+              <svg class="chat-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" placeholder="Search conversations…" readonly>
+            </div>
+          </div>
+
+          <p class="chat-section-label">Active</p>
+
+          <div class="chat-contact-list">
+            <div class="chat-contact-item active">
+              <div class="chat-avatar" style="background:linear-gradient(135deg,rgba(0,194,255,0.25),rgba(0,140,200,0.15));color:#00C2FF;font-size:0.82rem;font-weight:700;">
+                SR
+                <span class="chat-avatar-status" style="background:#22C55E;"></span>
+              </div>
+              <div class="chat-contact-info">
+                <div class="chat-contact-name">Sarah Reynolds</div>
+                <div class="chat-contact-preview">Project update ready…</div>
+              </div>
+              <div class="chat-contact-meta">
+                <span class="chat-time">2m ago</span>
+                <span class="chat-unread">3</span>
+              </div>
+            </div>
+
+            <div class="chat-contact-item">
+              <div class="chat-avatar" style="background:linear-gradient(135deg,rgba(34,197,94,0.2),rgba(22,160,78,0.1));color:#22C55E;font-size:0.82rem;font-weight:700;">
+                MK
+                <span class="chat-avatar-status" style="background:#22C55E;"></span>
+              </div>
+              <div class="chat-contact-info">
+                <div class="chat-contact-name">Marcus Klein</div>
+                <div class="chat-contact-preview">Encrypted · Verified</div>
+              </div>
+              <div class="chat-contact-meta">
+                <span class="chat-time">15m</span>
+              </div>
+            </div>
+
+            <div class="chat-contact-item">
+              <div class="chat-avatar" style="background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(109,62,216,0.1));color:#8b5cf6;font-size:0.82rem;font-weight:700;">
+                AT
+                <span class="chat-avatar-status" style="background:#6b7280;"></span>
+              </div>
+              <div class="chat-contact-info">
+                <div class="chat-contact-name">Aisha Torres</div>
+                <div class="chat-contact-preview">File received ✓</div>
+              </div>
+              <div class="chat-contact-meta">
+                <span class="chat-time">1h</span>
+              </div>
+            </div>
+
+            <div class="chat-contact-item">
+              <div class="chat-avatar" style="background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(200,125,5,0.1));color:#f59e0b;font-size:0.82rem;font-weight:700;">
+                DJ
+              </div>
+              <div class="chat-contact-info">
+                <div class="chat-contact-name">David Johnson</div>
+                <div class="chat-contact-preview">Q3 report attached</div>
+              </div>
+              <div class="chat-contact-meta">
+                <span class="chat-time">3h</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Chat Window -->
+        <div class="chat-main">
+          <div class="chat-header">
+            <div class="chat-header-info">
+              <div class="chat-avatar" style="width:36px;height:36px;background:linear-gradient(135deg,rgba(0,194,255,0.25),rgba(0,140,200,0.15));color:#00C2FF;font-size:0.8rem;font-weight:700;">SR</div>
+              <div>
+                <div class="chat-header-name">Sarah Reynolds</div>
+                <div class="chat-header-status">
+                  <span class="status-dot online"></span>
+                  Online · All messages end-to-end encrypted
+                </div>
+              </div>
+            </div>
+            <div class="chat-header-actions">
+              <span class="badge badge-emerald"><i class="bi bi-shield-lock-fill"></i> E2EE Active</span>
+              <button class="btn btn-icon"><i class="bi bi-telephone"></i></button>
+              <button class="btn btn-icon"><i class="bi bi-camera-video"></i></button>
+              <button class="btn btn-icon"><i class="bi bi-three-dots"></i></button>
+            </div>
+          </div>
+
+          <div class="chat-messages">
+            <div class="chat-date-divider"><span>Today</span></div>
+
+            <!-- Received message -->
+            <div class="msg-group received">
+              <div class="msg-avatar" style="width:30px;height:30px;background:linear-gradient(135deg,rgba(0,194,255,0.2),rgba(0,140,200,0.1));color:#00C2FF;font-size:0.7rem;font-weight:700;">SR</div>
+              <div class="msg-body">
+                <div class="msg-sender-name">Sarah Reynolds</div>
+                <div class="msg-bubble">Good morning! I've completed the security audit for the Q3 infrastructure review. The blockchain logs are all intact and verified.</div>
+                <div class="msg-meta">
+                  <span class="msg-security-badge"><i class="bi bi-shield-check"></i> E2EE Verified</span>
+                  <span>09:14 AM</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sent message -->
+            <div class="msg-group sent">
+              <div class="msg-avatar" style="width:30px;height:30px;background:linear-gradient(135deg,rgba(34,197,94,0.2),rgba(22,160,78,0.1));color:#22C55E;font-size:0.7rem;font-weight:700;">Me</div>
+              <div class="msg-body">
+                <div class="msg-sender-name">You</div>
+                <div class="msg-bubble">Excellent work. Can you also run the integrity audit on the file transfer blocks from last week?</div>
+                <div class="msg-meta">
+                  <span class="msg-security-badge"><i class="bi bi-shield-check"></i> Delivered</span>
+                  <span>09:16 AM</span>
+                  <i class="bi bi-check2-all" style="color:var(--cyan);"></i>
+                </div>
+              </div>
+            </div>
+
+            <!-- Received message -->
+            <div class="msg-group received">
+              <div class="msg-avatar" style="width:30px;height:30px;background:linear-gradient(135deg,rgba(0,194,255,0.2),rgba(0,140,200,0.1));color:#00C2FF;font-size:0.7rem;font-weight:700;">SR</div>
+              <div class="msg-body">
+                <div class="msg-sender-name">Sarah Reynolds</div>
+                <div class="msg-bubble">On it. I'll run the blockchain audit now and share the verification report as an encrypted file.</div>
+                <div class="msg-meta">
+                  <span class="msg-security-badge"><i class="bi bi-shield-check"></i> E2EE Verified</span>
+                  <span>09:18 AM</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Typing indicator -->
+            <div class="msg-group received">
+              <div class="msg-avatar" style="width:30px;height:30px;background:linear-gradient(135deg,rgba(0,194,255,0.2),rgba(0,140,200,0.1));color:#00C2FF;font-size:0.7rem;font-weight:700;">SR</div>
+              <div class="msg-body">
+                <div class="typing-indicator">
+                  <div class="typing-dots">
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                  </div>
+                  <span>typing…</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input bar -->
+          <div class="chat-input-bar">
+            <div class="chat-input-row">
+              <div class="chat-input-actions">
+                <button class="btn btn-icon" style="width:30px;height:30px;" title="Attach file"><i class="bi bi-paperclip" style="font-size:0.85rem;"></i></button>
+              </div>
+              <input type="text" placeholder="Write a secure message… (E2EE enabled)" readonly>
+              <div class="chat-input-actions">
+                <button class="btn btn-icon" style="width:30px;height:30px;" title="Emoji"><i class="bi bi-emoji-smile" style="font-size:0.85rem;"></i></button>
+                <button class="btn btn-primary btn-sm" style="padding:0.4rem 0.85rem;">
+                  <i class="bi bi-send-fill" style="font-size:0.82rem;"></i>
+                </button>
+              </div>
+            </div>
+            <p style="font-size:0.68rem;color:var(--gray-600);margin-top:6px;display:flex;align-items:center;gap:5px;">
+              <i class="bi bi-shield-lock-fill" style="color:var(--emerald);"></i>
+              Messages are end-to-end encrypted and blockchain-verified. The server never sees your plaintext.
+            </p>
+          </div>
+        </div>
+
+        <!-- Security info panel (right) -->
+        <div class="security-panel">
+          <div class="security-panel-header">
+            <span>Security Info</span>
+            <i class="bi bi-shield-check" style="color:var(--emerald);font-size:0.9rem;"></i>
+          </div>
+          <div class="security-item">
+            <div class="security-item-label">Encryption</div>
+            <div class="security-item-value ok"><i class="bi bi-lock-fill"></i> AES-256 Active</div>
+          </div>
+          <div class="security-item">
+            <div class="security-item-label">Key Status</div>
+            <div class="security-item-value ok"><i class="bi bi-key-fill"></i> RSA-2048 Ready</div>
+          </div>
+          <div class="security-item">
+            <div class="security-item-label">Blockchain</div>
+            <div class="security-item-value ok"><i class="bi bi-link-45deg"></i> Connected</div>
+          </div>
+          <div class="security-item">
+            <div class="security-item-label">Verification</div>
+            <div class="security-item-value ok"><i class="bi bi-patch-check-fill"></i> Verified</div>
+          </div>
+          <div class="security-item">
+            <div class="security-item-label">Session</div>
+            <div class="security-item-value ok"><i class="bi bi-shield-fill-check"></i> Secure</div>
+          </div>
+          <div class="security-item">
+            <div class="security-item-label">Last Block</div>
+            <div class="security-item-value" style="font-family:var(--font-mono);font-size:0.75rem;color:var(--cyan-300);">Block #2,847</div>
+          </div>
+          <div class="security-item">
+            <div class="security-item-label">Digital Sig.</div>
+            <div class="security-item-value ok"><i class="bi bi-pen-fill"></i> Verified</div>
+          </div>
+          <div class="security-item">
+            <div class="security-item-label">Device</div>
+            <div class="security-item-value ok"><i class="bi bi-laptop"></i> Trusted</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    {% if not session.get('user_id') %}
+    <div class="text-center" style="margin-top:2rem;">
+      <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+        Start Secure Messaging <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECURITY SECTION
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="section security-section" id="security">
+  <div class="container">
+    <div class="grid-2" style="gap:4rem;align-items:center;">
+      <div>
+        <div class="section-tag reveal"><i class="bi bi-shield-fill-check"></i> Security Standards</div>
+        <h2 class="section-heading reveal delay-100">Enterprise-grade security <br>from the ground up</h2>
+        <p class="section-subheading reveal delay-200" style="margin-bottom:2rem;">
+          Every design decision prioritizes security over convenience. Your messages are encrypted before they leave your device and only decrypted by the intended recipient.
+        </p>
+
+        <div style="display:flex;flex-direction:column;gap:1rem;" class="reveal delay-300">
+          <div style="display:flex;align-items:flex-start;gap:1rem;padding:1rem;background:rgba(17,24,39,0.5);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius);">
+            <div class="feature-icon-wrap cyan" style="flex-shrink:0;">
+              <i class="bi bi-lock-fill" style="font-size:1.1rem;"></i>
+            </div>
+            <div>
+              <div style="font-weight:600;color:var(--white);margin-bottom:0.25rem;">Zero-Knowledge Architecture</div>
+              <div style="font-size:0.85rem;color:var(--gray-400);">The server never has access to plaintext messages. All encryption and decryption happens exclusively on the client device.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:1rem;padding:1rem;background:rgba(17,24,39,0.5);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius);">
+            <div class="feature-icon-wrap emerald" style="flex-shrink:0;">
+              <i class="bi bi-link-45deg" style="font-size:1.1rem;"></i>
+            </div>
+            <div>
+              <div style="font-weight:600;color:var(--white);margin-bottom:0.25rem;">Immutable Blockchain Ledger</div>
+              <div style="font-size:0.85rem;color:var(--gray-400);">Message records are stored as SHA-256 linked blocks. Any tampering is immediately detectable through cryptographic audit.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:1rem;padding:1rem;background:rgba(17,24,39,0.5);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius);">
+            <div class="feature-icon-wrap purple" style="flex-shrink:0;">
+              <i class="bi bi-key-fill" style="font-size:1.1rem;"></i>
+            </div>
+            <div>
+              <div style="font-weight:600;color:var(--white);margin-bottom:0.25rem;">User-Controlled Key Management</div>
+              <div style="font-size:0.85rem;color:var(--gray-400);">Private keys are generated on your device and stored locally. Your private key never leaves your browser — ever.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats panel -->
+      <div class="reveal delay-200">
+        <div class="glass" style="padding:2rem;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+            <div class="stat-card">
+              <div class="stat-card-icon" style="background:rgba(0,194,255,0.1);color:var(--cyan);"><i class="bi bi-envelope-check-fill" style="font-size:1.2rem;"></i></div>
+              <div class="stat-card-value">100%</div>
+              <div class="stat-card-label">Messages E2EE</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon" style="background:rgba(34,197,94,0.1);color:var(--emerald);"><i class="bi bi-shield-fill-check" style="font-size:1.2rem;"></i></div>
+              <div class="stat-card-value">2048</div>
+              <div class="stat-card-label">RSA Key Bits</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon" style="background:rgba(139,92,246,0.1);color:var(--purple);"><i class="bi bi-hash" style="font-size:1.2rem;"></i></div>
+              <div class="stat-card-value">SHA-256</div>
+              <div class="stat-card-label">Block Hashing</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon" style="background:rgba(245,158,11,0.1);color:var(--amber);"><i class="bi bi-graph-up-arrow" style="font-size:1.2rem;"></i></div>
+              <div class="stat-card-value">99.9%</div>
+              <div class="stat-card-label">Audit Success</div>
+            </div>
+          </div>
+
+          <div style="background:rgba(6,13,24,0.6);border:1px solid rgba(255,255,255,0.06);border-radius:var(--radius);padding:1rem;">
+            <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--gray-500);margin-bottom:0.75rem;font-weight:700;">Live Blockchain Status</div>
+            <div style="display:flex;flex-direction:column;gap:0.5rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.83rem;">
+                <span style="color:var(--gray-400);">Latest Block</span>
+                <span style="font-family:var(--font-mono);color:var(--cyan-300);font-size:0.77rem;">#2,847</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.83rem;">
+                <span style="color:var(--gray-400);">Chain Status</span>
+                <span class="badge badge-emerald" style="font-size:0.68rem;"><i class="bi bi-check-circle-fill"></i> Valid</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.83rem;">
+                <span style="color:var(--gray-400);">Proof of Work</span>
+                <span style="color:var(--emerald);font-size:0.8rem;font-weight:600;"><i class="bi bi-check"></i> Verified</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.83rem;">
+                <span style="color:var(--gray-400);">Network</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span class="status-dot online" style="width:6px;height:6px;"></span><span style="color:var(--emerald);font-size:0.8rem;font-weight:600;">Connected</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CTA SECTION
+     ═══════════════════════════════════════════════════════════════ -->
+{% if not session.get('user_id') %}
+<section class="section">
+  <div class="container">
+    <div class="glass" style="padding:4rem 2rem;text-align:center;" class="reveal">
+      <div class="reveal">
+        <div class="section-tag" style="margin:0 auto 1.25rem;display:inline-flex;"><i class="bi bi-rocket-takeoff"></i> Get Started Today</div>
+        <h2 class="section-heading" style="margin-bottom:0.75rem;">Ready to secure your communications?</h2>
+        <p style="color:var(--gray-400);max-width:500px;margin:0 auto 2rem;font-size:0.95rem;line-height:1.7;">Join organizations using blockchain-verified messaging. Free to start. Enterprise-grade from day one.</p>
+        <div style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;">
+          <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Create Free Account</a>
+          <a href="{{ url_for('login') }}" class="btn btn-ghost btn-lg">Sign In</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

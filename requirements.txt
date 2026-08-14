@@ -1,0 +1,16 @@
+Flask==3.0.3
+Werkzeug==3.0.3
+# psycopg2-binary: PostgreSQL driver — used in production (Render/Railway/Linux).
+# Skipped on Windows to prevent local installation build errors.
+psycopg2-binary; sys_platform != "win32"
+gunicorn==22.0.0
+python-dotenv==1.0.1
+flask-socketio==5.3.6
+Authlib==1.3.1
+requests==2.32.3
+Pillow
+# ── New in v2.0: Security + Blockchain Advanced ──────────────────────────────
+pyotp==2.9.0          # Two-Factor Authentication (TOTP)
+qrcode[pil]==7.4.2    # QR code generation for 2FA setup
+Flask-Limiter==3.5.0  # Rate limiting
+PyJWT==2.8.0          # JWT token authentication

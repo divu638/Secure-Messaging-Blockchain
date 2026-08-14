@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% block title %}[KEY VAULT] — SecureMsg Blockchain{% endblock %}
+
+{% block extra_head %}
+<style>
+  .page-header-cyber {
+    background: rgba(0,8,20,0.92);
+    border: 1px solid rgba(189,0,255,0.25);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header-cyber::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background: linear-gradient(90deg,transparent,#BD00FF,#00C2FF,transparent);
+    opacity: 0.6;
+  }
+
+  .key-card {
+    background: rgba(0,6,15,0.9);
+    border: 1px solid rgba(0,194,255,0.2);
+    padding: 1.5rem;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+  .key-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background: linear-gradient(90deg,transparent,rgba(0,194,255,0.5),transparent);
+  }
+  .key-card.purple-card { border-color: rgba(189,0,255,0.2); }
+  .key-card.purple-card::before {
+    background: linear-gradient(90deg,transparent,rgba(189,0,255,0.5),transparent);
+  }
+
+  .key-card-icon {
+    width: 44px; height: 44px;
+    border: 1px solid;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .key-display-box {
+    background: rgba(0,15,30,0.95) !important;
+    border: 1px solid rgba(0,194,255,0.2) !important;
+    padding: 1rem !important;
+    color: #00C2FF !important;
+    font-family: 'JetBrains Mono', 'Share Tech Mono', monospace !important;
+    font-size: 0.72rem !important;
+    height: 180px;
+    overflow-y: auto;
+    word-break: break-all;
+    line-height: 1.6;
+  }
+  .key-display-box::-webkit-scrollbar { width: 3px; }
+  .key-display-box::-webkit-scrollbar-thumb { background: rgba(0,194,255,0.3); }
+
+  .privkey-box {
+    background: rgba(15,0,30,0.95) !important;
+    border: 1px solid rgba(189,0,255,0.2) !important;
+    color: #BD00FF !important;
+    filter: blur(4px);
+    transition: filter 0.3s;
+    cursor: pointer;
+  }
+  .privkey-box:hover { filter: none; }
+
+  .cyber-btn-action {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem; letter-spacing: 0.08em;
+    padding: 5px 12px;
+    border: 1px solid rgba(0,194,255,0.35);
+    color: #00C2FF; background: transparent; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .cyber-btn-action:hover {
+    background: rgba(0,194,255,0.08);
+    border-color: #00C2FF;
+    box-shadow: 0 0 10px rgba(0,194,255,0.15);
+  }
+  .cyber-btn-action.purple {
+    border-color: rgba(189,0,255,0.35);
+    color: #BD00FF;
+  }
+  .cyber-btn-action.purple:hover {
+    background: rgba(189,0,255,0.08);
+    border-color: #BD00FF;
+    box-shadow: 0 0 10px rgba(189,0,255,0.15);
+  }
+
+  .key-badge-missing {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem; letter-spacing: 0.08em;
+    padding: 5px 14px;
+    border: 1px solid rgba(255,45,85,0.4);
+    color: #FF2D55; background: rgba(255,45,85,0.06);
+  }
+
+  .gen-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 7px 20px;
+    border: 1px solid #BD00FF;
+    color: #BD00FF; background: rgba(189,0,255,0.06); cursor: pointer;
+    clip-path: polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+    transition: all 0.25s;
+  }
+  .gen-btn:hover {
+    background: rgba(189,0,255,0.12);
+    box-shadow: 0 0 20px rgba(189,0,255,0.25);
+    text-shadow: 0 0 8px #BD00FF;
+  }
+
+  .alert-cyber {
+    background: rgba(255,45,85,0.05);
+    border-left: 3px solid #FF2D55;
+    border: 1px solid rgba(255,45,85,0.2);
+    border-left-width: 3px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container py-4">
+
+  <!-- ── HEADER ── -->
+  <div class="page-header-cyber">
+    <div>
+      <h2 style="font-family:'Orbitron',monospace;font-size:0.95rem;font-weight:700;color:#BD00FF;letter-spacing:0.1em;text-shadow:0 0 15px rgba(189,0,255,0.4);margin:0 0 3px;">
+        <i class="bi bi-key-fill me-2"></i>RSA KEY VAULT
+      </h2>
+      <p style="font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:rgba(189,0,255,0.4);margin:0;">
+        RSA-OAEP 2048-bit key pair &nbsp;·&nbsp; Stored locally in browser vault
+      </p>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+      <span id="key-status-badge" class="key-badge-missing">
+        <i class="bi bi-shield-slash-fill me-1"></i>KEYS MISSING
+      </span>
+      <button id="initialize-keys-btn" class="gen-btn" onclick="handleInitializeKeys()">
+        <i class="bi bi-gear-fill me-1"></i>GENERATE KEYS
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Public Key -->
+    <div class="col-lg-6">
+      <div class="key-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
+          <div style="display:flex;align-items:center;gap:0.85rem;">
+            <div class="key-card-icon" style="border-color:rgba(0,194,255,0.4);color:#00C2FF;text-shadow:0 0 10px #00C2FF;background:rgba(0,194,255,0.06);">
+              <i class="bi bi-unlock-fill"></i>
+            </div>
+            <div>
+              <div style="font-family:'Orbitron',monospace;font-size:0.72rem;font-weight:700;color:#00C2FF;letter-spacing:0.1em;text-shadow:0 0 8px rgba(0,194,255,0.4);">PUBLIC KEY</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(0,194,255,0.4);">Share freely — used to encrypt messages for you</div>
+            </div>
+          </div>
+          <button class="cyber-btn-action" onclick="copyPublicKey()" title="Copy">
+            <i class="bi bi-copy me-1"></i>COPY
+          </button>
+        </div>
+        <div id="pubkey-box" class="key-display-box">
+          Not generated yet. Click "Generate Keys" above.
+        </div>
+      </div>
+    </div>
+
+    <!-- Private Key -->
+    <div class="col-lg-6">
+      <div class="key-card purple-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
+          <div style="display:flex;align-items:center;gap:0.85rem;">
+            <div class="key-card-icon" style="border-color:rgba(189,0,255,0.4);color:#BD00FF;text-shadow:0 0 10px #BD00FF;background:rgba(189,0,255,0.06);">
+              <i class="bi bi-lock-fill"></i>
+            </div>
+            <div>
+              <div style="font-family:'Orbitron',monospace;font-size:0.72rem;font-weight:700;color:#BD00FF;letter-spacing:0.1em;text-shadow:0 0 8px rgba(189,0,255,0.4);">PRIVATE KEY</div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(189,0,255,0.4);">Never transmitted — used to decrypt messages</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:0.5rem;">
+            <button class="cyber-btn-action purple" onclick="copyPrivateKey()" title="Copy"><i class="bi bi-copy"></i></button>
+            <button class="cyber-btn-action purple" onclick="downloadPrivateKey()" title="Download"><i class="bi bi-download"></i></button>
+          </div>
+        </div>
+        <div id="privkey-box" class="key-display-box privkey-box" title="Hover to reveal">
+          Not generated yet. Click "Generate Keys" above.
+        </div>
+        <div style="text-align:center;margin-top:0.5rem;font-family:'Share Tech Mono',monospace;font-size:0.62rem;color:rgba(189,0,255,0.3);">
+          <i class="bi bi-eye me-1"></i>Hover to reveal
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Notice -->
+    <div class="col-12">
+      <div class="alert-cyber">
+        <div style="width:44px;height:44px;border:1px solid rgba(0,194,255,0.4);display:flex;align-items:center;justify-content:center;color:#00C2FF;font-size:1.3rem;flex-shrink:0;text-shadow:0 0 10px #00C2FF;">
+          <i class="bi bi-shield-lock-fill"></i>
+        </div>
+        <div>
+          <div style="font-family:'Orbitron',monospace;font-size:0.72rem;color:#00C2FF;letter-spacing:0.1em;margin-bottom:6px;">✅ KEY VAULT PROTECTION ACTIVE</div>
+          <p style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:rgba(200,230,255,0.7);max-width:800px;line-height:1.7;margin:0;">
+            Your private key is <strong style="color:#00C2FF;">encrypted with AES-256-GCM</strong> and backed up to the server using your Vault PIN.
+            The server <strong>never sees</strong> your private key — only your PIN can decrypt it.
+            If you clear your browser cache or log in on a new device, you will be prompted to enter your Vault PIN to restore access automatically.
+            <br><br>
+            <strong style="color:#FFB300;">⚠ Important:</strong> Remember your Vault PIN. If you forget it, your encrypted messages will be permanently unreadable.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.CURRENT_USER = "{{ username }}";
+</script>
+{% endblock %}
+

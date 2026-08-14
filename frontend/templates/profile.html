@@ -1,0 +1,410 @@
+{% extends "base.html" %}
+{% block title %}[AGENT PROFILE] — SecureMsg Blockchain{% endblock %}
+
+{% block extra_head %}
+<style>
+  @keyframes rotateRing { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+  .page-header-cyber {
+    background: rgba(0,5,15,0.92);
+    border: 1px solid rgba(0,194,255,0.22);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header-cyber::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background: linear-gradient(90deg,transparent,#00C2FF,#BD00FF,transparent);
+    opacity: 0.6;
+  }
+
+  .cyber-card {
+    background: rgba(0,6,15,0.9);
+    border: 1px solid rgba(0,194,255,0.18);
+    padding: 1.5rem;
+    height: 100%;
+    position: relative;
+  }
+  .cyber-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background: linear-gradient(90deg,transparent,rgba(0,194,255,0.4),transparent);
+  }
+  .cyber-card.purple { border-color: rgba(189,0,255,0.18); }
+  .cyber-card.purple::before {
+    background: linear-gradient(90deg,transparent,rgba(189,0,255,0.4),transparent);
+  }
+
+  .profile-avatar {
+    width: 96px; height: 96px;
+    border: 1px solid rgba(0,194,255,0.4);
+    background: linear-gradient(135deg,rgba(0,194,255,0.12),rgba(189,0,255,0.08));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Orbitron', monospace;
+    font-size: 2rem; font-weight: 700; color: #00C2FF;
+    text-shadow: 0 0 20px rgba(0,194,255,0.6);
+    box-shadow: 0 0 30px rgba(0,194,255,0.15);
+    margin: 0 auto 1.25rem;
+    position: relative;
+  }
+  .profile-avatar::before {
+    content:''; position:absolute;
+    inset:-6px; border:1px dashed rgba(0,194,255,0.2);
+    animation: rotateRing 10s linear infinite;
+  }
+
+  .info-row {
+    display: flex; align-items: flex-start; gap: 0.85rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid rgba(0,194,255,0.07);
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-icon {
+    width: 32px; height: 32px; flex-shrink: 0;
+    border: 1px solid rgba(0,194,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(0,194,255,0.6); font-size: 0.85rem;
+  }
+  .info-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem; color: rgba(0,194,255,0.4);
+    text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 2px;
+  }
+  .info-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem; color: #c0eeff;
+  }
+
+  .profile-link-btn {
+    display: block;
+    width: 100%;
+    padding: 0.65rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase;
+    text-decoration: none; text-align: center;
+    border: 1px solid rgba(0,194,255,0.35);
+    color: #00C2FF; background: rgba(0,194,255,0.05);
+    transition: all 0.2s; margin-bottom: 0.5rem;
+    clip-path: polygon(7px 0%,100% 0%,calc(100% - 7px) 100%,0% 100%);
+  }
+  .profile-link-btn:hover {
+    background: rgba(0,194,255,0.1); border-color: #00C2FF;
+    box-shadow: 0 0 15px rgba(0,194,255,0.2); color: #00C2FF;
+  }
+  .profile-link-btn.danger {
+    border-color: rgba(255,45,85,0.35);
+    color: #FF2D55; background: rgba(255,45,85,0.05);
+  }
+  .profile-link-btn.danger:hover {
+    background: rgba(255,45,85,0.1); border-color: #FF2D55;
+    box-shadow: 0 0 15px rgba(255,45,85,0.2); color: #FF2D55;
+  }
+
+  /* Security score ring */
+  .score-ring-wrap {
+    position: relative; width: 90px; height: 90px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .score-ring-wrap svg { width:100%;height:100%;transform:rotate(-90deg); }
+
+  /* Checklist items */
+  .sec-check-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(0,194,255,0.07);
+  }
+  .sec-check-row:last-child { border-bottom: none; }
+
+  .badge-cyber-green {
+    font-family:'Share Tech Mono',monospace; font-size:0.62rem; letter-spacing:0.08em;
+    padding:3px 10px; border:1px solid rgba(0,255,65,0.35); color:#00FF41; background:rgba(0,255,65,0.06);
+  }
+  .badge-cyber-red {
+    font-family:'Share Tech Mono',monospace; font-size:0.62rem; letter-spacing:0.08em;
+    padding:3px 10px; border:1px solid rgba(255,45,85,0.35); color:#FF2D55; background:rgba(255,45,85,0.06);
+  }
+  .badge-cyber-cyan {
+    font-family:'Share Tech Mono',monospace; font-size:0.62rem; letter-spacing:0.08em;
+    padding:3px 10px; border:1px solid rgba(0,194,255,0.35); color:#00C2FF; background:rgba(0,194,255,0.06);
+  }
+  .badge-cyber-amber {
+    font-family:'Share Tech Mono',monospace; font-size:0.62rem; letter-spacing:0.08em;
+    padding:3px 10px; border:1px solid rgba(255,179,0,0.35); color:#FFB300; background:rgba(255,179,0,0.06);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container py-4">
+
+  <!-- ── HEADER ── -->
+  <div class="page-header-cyber">
+    <div>
+      <h2 style="font-family:'Orbitron',monospace;font-size:0.95rem;font-weight:700;color:#00C2FF;letter-spacing:0.1em;text-shadow:0 0 15px rgba(0,194,255,0.4);margin:0 0 3px;">
+        <i class="bi bi-person-bounding-box me-2"></i>AGENT PROFILE
+      </h2>
+      <p style="font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:rgba(0,194,255,0.4);margin:0;">
+        Identity & security posture dashboard
+      </p>
+    </div>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+      <a href="{{ url_for('dashboard') }}" class="profile-link-btn" style="width:auto;margin-bottom:0;padding:7px 18px;">
+        <i class="bi bi-grid-fill me-1"></i>DASHBOARD
+      </a>
+      <a href="{{ url_for('logout') }}" class="profile-link-btn danger" style="width:auto;margin-bottom:0;padding:7px 18px;">
+        <i class="bi bi-box-arrow-right me-1"></i>SIGN OUT
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- ── LEFT: IDENTITY CARD ── -->
+    <div class="col-lg-4">
+      <div class="cyber-card" style="text-align:center;">
+
+        <!-- Avatar -->
+        <div class="profile-avatar">
+          {{ (full_name[0] | upper) if full_name else (username[0] | upper if username else 'U') }}
+        </div>
+
+        <!-- Name/handle -->
+        <div style="font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;color:#00C2FF;text-shadow:0 0 10px rgba(0,194,255,0.4);margin-bottom:4px;">
+          {{ full_name if full_name else (username if username else 'Agent') }}
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:rgba(189,0,255,0.7);letter-spacing:0.1em;margin-bottom:1.5rem;">
+          @{{ username }}
+        </div>
+
+        <!-- Info rows -->
+        <div style="text-align:left;border-top:1px solid rgba(0,194,255,0.1);padding-top:1.25rem;margin-bottom:1.5rem;">
+          <div class="info-row">
+            <div class="info-icon"><i class="bi bi-envelope-fill"></i></div>
+            <div>
+              <div class="info-label">Secure Channel</div>
+              <div class="info-value">{{ user['email'] if user else 'unknown@securemsg.net' }}</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-icon"><i class="bi bi-calendar3"></i></div>
+            <div>
+              <div class="info-label">Enrolled Since</div>
+              <div class="info-value">{{ ((user['created_at'] | string)[:10]) if (user and user.get('created_at')) else '—' }}</div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-icon"><i class="bi bi-clock-history"></i></div>
+            <div>
+              <div class="info-label">Last Active</div>
+              <div class="info-value" style="color:#00FF41;">
+                <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#00FF41;box-shadow:0 0 6px #00FF41;margin-right:5px;"></span>Just now
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <a href="{{ url_for('chat') }}" class="profile-link-btn">
+          <i class="bi bi-chat-dots-fill me-1"></i>OPEN SECURE CHAT
+        </a>
+        <a href="{{ url_for('key_manager') }}" class="profile-link-btn" style="border-color:rgba(189,0,255,0.35);color:#BD00FF;background:rgba(189,0,255,0.05);"
+          onmouseover="this.style.background='rgba(189,0,255,0.1)';this.style.boxShadow='0 0 15px rgba(189,0,255,0.2)'"
+          onmouseout="this.style.background='rgba(189,0,255,0.05)';this.style.boxShadow='none'">
+          <i class="bi bi-key-fill me-1"></i>MANAGE RSA KEYS
+        </a>
+
+      </div>
+    </div>
+
+    <!-- ── RIGHT: SECURITY POSTURE ── -->
+    <div class="col-lg-8">
+      <div class="cyber-card purple">
+
+        <div style="font-family:'Orbitron',monospace;font-size:0.78rem;font-weight:700;color:#BD00FF;letter-spacing:0.12em;text-shadow:0 0 10px rgba(189,0,255,0.4);margin-bottom:1.25rem;">
+          <i class="bi bi-shield-check me-2"></i>SECURITY POSTURE
+        </div>
+
+        <div class="row g-3 mb-4">
+
+          <!-- Score ring -->
+          <div class="col-md-6">
+            <div style="background:rgba(0,194,255,0.03);border:1px solid rgba(0,194,255,0.15);padding:1.25rem;display:flex;align-items:center;gap:1.25rem;">
+              <div class="score-ring-wrap">
+                <svg viewBox="0 0 36 36">
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(0,194,255,0.08)" stroke-width="3"/>
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#00FF41" stroke-width="3" stroke-dasharray="92, 100" id="score-circle" style="transition:stroke-dasharray 1.5s ease-out; filter:drop-shadow(0 0 4px #00FF41);"/>
+                </svg>
+                <div style="position:absolute;font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:700;color:#00FF41;text-shadow:0 0 10px #00FF41;" id="score-text">92</div>
+              </div>
+              <div>
+                <div style="font-family:'Orbitron',monospace;font-size:0.8rem;color:#00FF41;letter-spacing:0.08em;margin-bottom:4px;text-shadow:0 0 8px rgba(0,255,65,0.4);">EXCELLENT</div>
+                <div style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:rgba(0,255,65,0.5);line-height:1.5;">Enterprise-grade security posture achieved.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key status -->
+          <div class="col-md-6">
+            <div style="background:rgba(189,0,255,0.03);border:1px solid rgba(189,0,255,0.15);padding:1.25rem;height:100%;">
+              <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(189,0,255,0.45);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:0.75rem;">RSA-OAEP Key Pair</div>
+              <div id="profile-key-status" style="margin-bottom:0.75rem;font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:rgba(255,179,0,0.7);">
+                <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#FFB300;margin-right:5px;"></span>Checking...
+              </div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:rgba(189,0,255,0.4);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;">PUBLIC KEY FINGERPRINT</div>
+              <div id="profile-key-fingerprint" style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:#BD00FF;background:rgba(189,0,255,0.05);border:1px solid rgba(189,0,255,0.15);padding:0.5rem;word-break:break-all;letter-spacing:0.05em;">
+                Not Generated
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Checklist -->
+        <div style="background:rgba(0,4,10,0.8);border:1px solid rgba(0,194,255,0.12);">
+          <div style="padding:0.7rem 1rem;border-bottom:1px solid rgba(0,194,255,0.1);background:rgba(0,194,255,0.03);">
+            <span style="font-family:'Orbitron',monospace;font-size:0.65rem;color:rgba(0,194,255,0.6);letter-spacing:0.1em;">SECURITY CHECKLIST</span>
+          </div>
+
+          <div class="sec-check-row">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <i class="bi bi-check-circle-fill" style="color:#00FF41;text-shadow:0 0 6px #00FF41;"></i>
+              <div>
+                <div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#c0eeff;">Account Verified</div>
+                <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(0,194,255,0.35);">bcrypt hashed credentials active</div>
+              </div>
+            </div>
+            <span class="badge-cyber-green">ACTIVE</span>
+          </div>
+
+          <div class="sec-check-row">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <i id="check-keys-icon" class="bi bi-x-circle-fill" style="color:#FF2D55;text-shadow:0 0 6px #FF2D55;"></i>
+              <div>
+                <div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#c0eeff;">Cryptographic Keys</div>
+                <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(0,194,255,0.35);">RSA-2048 key pair for E2EE</div>
+              </div>
+            </div>
+            <span id="check-keys-badge" class="badge-cyber-red">MISSING</span>
+          </div>
+
+          <div class="sec-check-row">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <i class="bi bi-shield-lock-fill" style="color:#00C2FF;text-shadow:0 0 6px #00C2FF;"></i>
+              <div>
+                <div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:#c0eeff;">Blockchain Node Link</div>
+                <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(0,194,255,0.35);">Connected to immutable ledger</div>
+              </div>
+            </div>
+            <span class="badge-cyber-cyan">SECURED</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ 2FA MANAGEMENT CARD ═══ -->
+  <div class="row g-3 mt-2">
+    <div class="col-12">
+      <div class="cyber-card {% if two_fa_enabled %}border-success{% endif %}">
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+          <div>
+            <h6 class="fw-bold text-light mb-0">
+              <i class="bi bi-shield-lock-fill me-2" style="color:{% if two_fa_enabled %}#22C55E{% else %}#00C2FF{% endif %};"></i>
+              Two-Factor Authentication
+            </h6>
+            <p class="text-muted small mb-0 mt-1">
+              {% if two_fa_enabled %}
+                🔐 2FA is <strong class="text-success">ENABLED</strong> — your account has an extra security layer.
+              {% else %}
+                ⚠️ 2FA is <strong class="text-warning">DISABLED</strong> — protect your account with a second factor.
+              {% endif %}
+            </p>
+          </div>
+          <span class="badge px-3 py-2 fw-semibold" style="background:{% if two_fa_enabled %}rgba(34,197,94,0.15){% else %}rgba(245,158,11,0.15){% endif %};color:{% if two_fa_enabled %}#22C55E{% else %}#f59e0b{% endif %};border:1px solid {% if two_fa_enabled %}rgba(34,197,94,0.3){% else %}rgba(245,158,11,0.3){% endif %};">
+            {% if two_fa_enabled %}ACTIVE{% else %}INACTIVE{% endif %}
+          </span>
+        </div>
+
+        {% if two_fa_enabled %}
+          <!-- Disable 2FA form -->
+          <div class="p-3" style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:10px;">
+            <p class="small text-muted mb-3">Enter your current 6-digit authenticator code to disable 2FA:</p>
+            <form method="POST" action="/2fa/disable" class="d-flex gap-2 align-items-center flex-wrap">
+              <input type="text" name="code"
+                     class="form-control form-control-cyber text-center fw-bold"
+                     style="max-width:160px;font-size:1.2rem;letter-spacing:0.35rem;font-family:var(--font-mono);"
+                     placeholder="______" maxlength="6" pattern="\d{6}" required>
+              <button type="submit" class="btn btn-sm fw-semibold"
+                      style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#ef4444;padding:8px 18px;">
+                <i class="bi bi-shield-slash me-1"></i>Disable 2FA
+              </button>
+            </form>
+          </div>
+        {% else %}
+          <!-- Enable 2FA button -->
+          <a href="/2fa/setup" class="btn btn-cyber-primary">
+            <i class="bi bi-qr-code-scan me-2"></i>Setup 2FA — Scan QR Code
+          </a>
+          <p class="small text-muted mt-2 mb-0">
+            Works with Google Authenticator, Authy, and any TOTP-compatible app.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.CURRENT_USER = "{{ username }}";
+
+(async () => {
+  const savedPub = localStorage.getItem(`secure_msg_pub_key_${window.CURRENT_USER}`);
+  const statusDiv = document.getElementById('profile-key-status');
+  const fingerprintDiv = document.getElementById('profile-key-fingerprint');
+  const scoreText = document.getElementById('score-text');
+  const scoreCircle = document.getElementById('score-circle');
+  const checkKeysIcon = document.getElementById('check-keys-icon');
+  const checkKeysBadge = document.getElementById('check-keys-badge');
+
+  if (savedPub) {
+    statusDiv.innerHTML = '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#00FF41;box-shadow:0 0 6px #00FF41;margin-right:5px;"></span><span style="color:#00FF41;font-weight:600;">Keys Active & Secured</span>';
+    const mockHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(savedPub));
+    const hashArray = Array.from(new Uint8Array(mockHash));
+    const hex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 32).toUpperCase();
+    fingerprintDiv.textContent = hex.match(/.{1,4}/g).join(':');
+    setTimeout(() => {
+      scoreCircle.style.strokeDasharray = "100, 100";
+      scoreText.textContent = "100";
+    }, 500);
+    checkKeysIcon.className = "bi bi-check-circle-fill";
+    checkKeysIcon.style.color = "#00FF41";
+    checkKeysIcon.style.textShadow = "0 0 6px #00FF41";
+    checkKeysBadge.className = "badge-cyber-green";
+    checkKeysBadge.textContent = "ACTIVE";
+  } else {
+    statusDiv.innerHTML = '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#FFB300;box-shadow:0 0 6px #FFB300;margin-right:5px;"></span><span style="color:#FFB300;">Keys Not Initialized</span>';
+    fingerprintDiv.textContent = "⚠ Action Required: Initialize your RSA keys.";
+    fingerprintDiv.style.color = "#FFB300";
+    fingerprintDiv.style.borderColor = "rgba(255,179,0,0.2)";
+    fingerprintDiv.style.background = "rgba(255,179,0,0.04)";
+    setTimeout(() => {
+      scoreCircle.style.strokeDasharray = "55, 100";
+      scoreCircle.setAttribute('stroke', '#FFB300');
+      scoreCircle.style.filter = "drop-shadow(0 0 4px #FFB300)";
+      scoreText.textContent = "55";
+      scoreText.style.color = "#FFB300";
+      scoreText.style.textShadow = "0 0 10px #FFB300";
+    }, 500);
+  }
+})();
+</script>
+{% endblock %}

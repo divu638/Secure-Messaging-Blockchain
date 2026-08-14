@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}About - Secure Messaging Blockchain System{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-8">
+            <div class="text-center mb-5">
+                <i class="bi bi-info-circle-fill display-5 text-cyber-blue" style="filter: drop-shadow(0 0 8px var(--neon-blue-glow));"></i>
+                <h1 class="fw-bold mt-3 text-cyber-glow" style="font-family: 'Space Grotesk', sans-serif;">System Specifications</h1>
+                <p class="text-secondary">Technical details and project progression map</p>
+            </div>
+
+            <div class="glass-panel p-4 mb-5">
+                <h5 class="fw-bold text-light mb-3" style="font-family: 'Space Grotesk', sans-serif;">Architecture Overview</h5>
+                <p class="text-secondary small mb-3">
+                    The <strong>Secure Messaging Blockchain System</strong> represents a zero-knowledge communication model. 
+                    Rather than relying on central authorities to guarantee privacy and log integrity, this system uses 
+                    verifiable cryptography at every tier:
+                </p>
+                <div class="row g-3 small">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded border border-secondary-subtle" style="background: rgba(0,0,0,0.2);">
+                            <span class="text-cyber-blue fw-bold d-block mb-1">
+                                <i class="bi bi-shield-fill-check me-1"></i>Browser-Level RSA
+                            </span>
+                            <span class="text-secondary text-muted">
+                                RSA-OAEP 2048-bit keys are compiled locally. The server is completely oblivious to user private keys.
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded border border-secondary-subtle" style="background: rgba(0,0,0,0.2);">
+                            <span class="text-cyber-purple fw-bold d-block mb-1">
+                                <i class="bi bi-link-45deg me-1"></i>Cryptographic Ledger
+                            </span>
+                            <span class="text-secondary text-muted">
+                                Every transaction block includes the SHA-256 hash of its contents, linked to the previous block's hash.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-5" style="border-color: rgba(255,255,255,0.08);">
+
+            <h4 class="fw-bold text-light text-center mb-4" style="font-family: 'Space Grotesk', sans-serif;">System Roadmap</h4>
+            
+            <div class="timeline">
+
+                <div class="timeline-item">
+                    <div class="timeline-badge bg-success"><i class="bi bi-check-lg"></i></div>
+                    <div class="timeline-content">
+                        <h5 class="fw-semibold text-light mb-1">Phase 1 — Core Web Portal <span class="badge bg-success-subtle text-success ms-2" style="font-size: 0.7rem;">Completed</span></h5>
+                        <p class="text-secondary small mb-0">
+                            Flask application layout, SQLite integrations, and responsive Bootstrap styling with secure credentials hashing.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-badge bg-success"><i class="bi bi-check-lg"></i></div>
+                    <div class="timeline-content">
+                        <h5 class="fw-semibold text-light mb-1">Phase 2 — End-to-End Cryptography <span class="badge bg-success-subtle text-success ms-2" style="font-size: 0.7rem;">Completed</span></h5>
+                        <p class="text-secondary small mb-0">
+                            Implementation of the Subtle Crypto Web API for local RSA-OAEP 2048-bit key pair orchestration and client-side payload encryption.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-badge bg-success"><i class="bi bi-check-lg"></i></div>
+                    <div class="timeline-content">
+                        <h5 class="fw-semibold text-light mb-1">Phase 3 — Ledger Verification Chain <span class="badge bg-success-subtle text-success ms-2" style="font-size: 0.7rem;">Completed</span></h5>
+                        <p class="text-secondary small mb-0">
+                            A lightweight Proof-of-Work algorithm mining blockchain nodes in python, linking transaction hashes to prevent unauthorized modifications.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-badge bg-success"><i class="bi bi-check-lg"></i></div>
+                    <div class="timeline-content">
+                        <h5 class="fw-semibold text-light mb-1">Phase 4 — IPFS Distributed Storage <span class="badge bg-success-subtle text-success ms-2" style="font-size: 0.7rem;">Completed</span></h5>
+                        <p class="text-secondary small mb-0">
+                            Storing encrypted payloads on interplanetary filesystem (IPFS) via Pinata to prevent data loss or server single-points-of-failure. Every message CID is pinned to the decentralized web with a local fallback cache.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
