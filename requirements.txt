@@ -1,8 +1,6 @@
 Flask==3.0.3
 Werkzeug==3.0.3
-# psycopg2-binary: PostgreSQL driver — used in production (Render/Railway/Linux).
-# Skipped on Windows to prevent local installation build errors.
-psycopg2-binary; sys_platform != "win32"
+psycopg2-binary>=2.9.9
 gunicorn==22.0.0
 python-dotenv==1.0.1
 flask-socketio==5.3.6

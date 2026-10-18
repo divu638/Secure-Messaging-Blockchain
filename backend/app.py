@@ -117,6 +117,7 @@ def get_db():
             g.db = psycopg2.connect(
                 Config.DATABASE_URL,
                 cursor_factory=psycopg2.extras.RealDictCursor,
+                connect_timeout=15,
             )
         else:
             db_dir = os.path.dirname(Config.SQLITE_PATH)
@@ -138,16 +139,24 @@ def db_execute(query, params=(), fetchone=False, fetchall=False, commit=False):
     if USE_POSTGRES:
         pg_query = query.replace("?", "%s")
         cur = db.cursor()
-        cur.execute(pg_query, params)
-        if commit:
-            db.commit()
-        if fetchone:
-            row = cur.fetchone()
-            return dict(row) if row else None
-        if fetchall:
-            rows = cur.fetchall()
-            return [dict(r) for r in rows] if rows else []
-        return cur
+        try:
+            cur.execute(pg_query, params)
+            if commit:
+                db.commit()
+            if fetchone:
+                row = cur.fetchone()
+                return dict(row) if row else None
+            if fetchall:
+                rows = cur.fetchall()
+                return [dict(r) for r in rows] if rows else []
+            return cur
+        except Exception:
+            if commit:
+                try:
+                    db.rollback()
+                except Exception:
+                    pass
+            raise
     else:
         cur = db.execute(query, params)
         if commit:
@@ -164,10 +173,16 @@ def db_execute(query, params=(), fetchone=False, fetchall=False, commit=False):
 def last_insert_id():
     db = get_db()
     if USE_POSTGRES:
-        cur = db.cursor()
-        cur.execute("SELECT lastval()")
-        row = cur.fetchone()
-        return list(row.values())[0] if row else None
+        try:
+            cur = db.cursor()
+            cur.execute("SELECT lastval()")
+            row = cur.fetchone()
+            return list(row.values())[0] if row else None
+        except Exception:
+            cur = db.cursor()
+            cur.execute("SELECT MAX(id) FROM blockchain")
+            row = cur.fetchone()
+            return list(row.values())[0] if row else None
     else:
         return db.execute("SELECT last_insert_rowid()").fetchone()[0]
 
@@ -216,7 +231,7 @@ def init_db():
                 nonce             INTEGER NOT NULL,
                 digital_signature TEXT,
                 sig_valid         BOOLEAN DEFAULT NULL,
-                timestamp         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                timestamp         TEXT NOT NULL
             )
         """)
         cur.execute("""
@@ -301,6 +316,7 @@ def _migrate_db():
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP",
                 "ALTER TABLE blockchain ADD COLUMN IF NOT EXISTS digital_signature TEXT",
                 "ALTER TABLE blockchain ADD COLUMN IF NOT EXISTS sig_valid BOOLEAN",
+                "ALTER TABLE blockchain ADD COLUMN IF NOT EXISTS sender_encrypted TEXT",
                 "ALTER TABLE user_keys ADD COLUMN IF NOT EXISTS signing_public_key TEXT",
                 "ALTER TABLE user_keys ADD COLUMN IF NOT EXISTS encrypted_private_key TEXT",
                 "ALTER TABLE user_keys ADD COLUMN IF NOT EXISTS encrypted_signing_key TEXT",
@@ -343,6 +359,20 @@ def _migrate_db():
             db.commit()
     except Exception:
         pass
+
+
+_db_initialized = False
+
+@app.before_request
+def auto_init_db():
+    """Ensure database schema is initialized on first incoming request."""
+    global _db_initialized
+    if not _db_initialized:
+        try:
+            init_db()
+            _db_initialized = True
+        except Exception as e:
+            app.logger.warning(f"Database auto-init warning: {e}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -611,8 +641,8 @@ def two_fa_enable():
 
     if verify_totp(secret, code):
         db_execute(
-            "UPDATE users SET totp_secret=?, two_fa_enabled=1 WHERE id=?",
-            (secret, session["user_id"]),
+            "UPDATE users SET totp_secret=?, two_fa_enabled=? WHERE id=?",
+            (secret, True, session["user_id"]),
             commit=True,
         )
         session.pop("_2fa_setup_secret", None)
@@ -638,8 +668,8 @@ def two_fa_disable():
 
     if verify_totp(user["totp_secret"], code):
         db_execute(
-            "UPDATE users SET totp_secret=NULL, two_fa_enabled=0 WHERE id=?",
-            (session["user_id"],), commit=True,
+            "UPDATE users SET totp_secret=NULL, two_fa_enabled=? WHERE id=?",
+            (False, session["user_id"]), commit=True,
         )
         session["two_fa_enabled"] = False
         flash("2FA has been disabled.", "info")
@@ -812,7 +842,7 @@ def toggle_admin(user_id):
         return jsonify({"error": "Cannot modify your own admin status"}), 400
     user = db_execute("SELECT is_admin FROM users WHERE id = ?", (user_id,), fetchone=True)
     if user:
-        new_status = 0 if user["is_admin"] else 1
+        new_status = False if user["is_admin"] else True
         db_execute("UPDATE users SET is_admin = ? WHERE id = ?", (new_status, user_id), commit=True)
     return jsonify({"success": True})
 
@@ -1029,7 +1059,7 @@ def send_message():
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (sender, recipient, encrypted_message, sender_encrypted,
           previous_hash, block_hash, nonce,
-          digital_signature, 1 if sig_valid else (0 if sig_valid is False else None),
+          digital_signature, True if sig_valid else (False if sig_valid is False else None),
           timestamp), commit=True)
 
     new_id = last_insert_id()
@@ -1084,9 +1114,14 @@ def audit_blockchain():
 
     for block in blocks:
         b        = dict(block)
+        ts_val   = b.get("timestamp", "")
+        if hasattr(ts_val, "strftime"):
+            ts_val = ts_val.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            ts_val = str(ts_val).replace("T", " ")
         recalc   = calculate_hash(
             b["sender"], b["recipient"], b["encrypted_message"],
-            b.get("sender_encrypted"), b["previous_hash"], b["nonce"], b["timestamp"],
+            b.get("sender_encrypted"), b["previous_hash"], b["nonce"], ts_val,
         )
         issues = []
         if recalc != b["hash"]:

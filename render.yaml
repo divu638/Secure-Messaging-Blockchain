@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: secure-messaging-blockchain
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --chdir backend --worker-class gthread --threads 8 --timeout 120 app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FLASK_DEBUG
+        value: "false"
+      - key: DATABASE_URL
+        sync: false
+      - key: PINATA_API_KEY
+        sync: false
+      - key: PINATA_SECRET_KEY
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false

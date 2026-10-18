@@ -18,7 +18,14 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-this-in-production")
 
     # ── Database ─────────────────────────────────────────────────────────────
-    DATABASE_URL = os.environ.get("DATABASE_URL", None)
+    _raw_db_url = os.environ.get("DATABASE_URL", "").strip()
+    if _raw_db_url:
+        if _raw_db_url.startswith("postgres://"):
+            _raw_db_url = "postgresql://" + _raw_db_url[len("postgres://"):]
+        if "supabase" in _raw_db_url.lower() and "sslmode=" not in _raw_db_url.lower():
+            sep = "&" if "?" in _raw_db_url else "?"
+            _raw_db_url = f"{_raw_db_url}{sep}sslmode=require"
+    DATABASE_URL = _raw_db_url if _raw_db_url else None
     SQLITE_PATH  = os.path.join(_root_dir, "database", "instance", "database.db")
 
     # ── Debug ─────────────────────────────────────────────────────────────────
@@ -27,6 +34,11 @@ class Config:
     # ── IPFS / Pinata ─────────────────────────────────────────────────────────
     PINATA_API_KEY    = os.environ.get("PINATA_API_KEY", "")
     PINATA_SECRET_KEY = os.environ.get("PINATA_SECRET_KEY", "")
+
+    # ── Supabase ──────────────────────────────────────────────────────────────
+    SUPABASE_URL             = os.environ.get("SUPABASE_URL", "")
+    SUPABASE_PUBLISHABLE_KEY = os.environ.get("SUPABASE_PUBLISHABLE_KEY", "")
+    SUPABASE_SECRET_KEY      = os.environ.get("SUPABASE_SECRET_KEY", "")
 
     # ── Rate Limiting ─────────────────────────────────────────────────────────
     RATELIMIT_STORAGE_URI    = "memory://"
