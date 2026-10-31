@@ -71,9 +71,12 @@ _template_dir = os.path.join(_root_dir, "frontend", "templates")
 _static_dir   = os.path.join(_root_dir, "frontend", "static")
 
 # ── App Initialization ────────────────────────────────────────────────────────
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 app = Flask(__name__,
             template_folder=_template_dir,
             static_folder=_static_dir)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.config.from_object(Config)
 app.config["SECRET_KEY"] = Config.SECRET_KEY
 

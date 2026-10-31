@@ -28,6 +28,9 @@ app = _backend_module.app
 socketio = _backend_module.socketio
 init_db = _backend_module.init_db
 
+from werkzeug.middleware.proxy_fix import ProxyFix
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
 # Auto-initialize database on startup
 with app.app_context():
     try:
@@ -38,3 +41,4 @@ with app.app_context():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host="0.0.0.0", port=port, allow_unsafe_werkzeug=True)
+
