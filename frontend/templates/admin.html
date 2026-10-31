@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% block title %}[ADMIN CONSOLE] — SecureMsg Blockchain{% endblock %}
+
+{% block extra_head %}
+<style>
+  .admin-header-cyber {
+    background: rgba(0, 10, 20, 0.92);
+    border: 1px solid rgba(0, 194, 255, 0.25);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .admin-header-cyber::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, #00C2FF, #22C55E, transparent);
+    opacity: 0.6;
+  }
+  .admin-card {
+    background: rgba(0, 8, 16, 0.9);
+    border: 1px solid rgba(0, 194, 255, 0.2);
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .admin-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 6px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .admin-table th {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    color: #00C2FF;
+    letter-spacing: 0.08em;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(0, 194, 255, 0.2);
+    text-transform: uppercase;
+  }
+  .admin-table td {
+    background: rgba(0, 15, 30, 0.6);
+    border-top: 1px solid rgba(0, 194, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 194, 255, 0.1);
+    padding: 0.85rem 1rem;
+    font-size: 0.8rem;
+    color: #e2e8f0;
+    vertical-align: middle;
+  }
+  .admin-table tr td:first-child {
+    border-left: 1px solid rgba(0, 194, 255, 0.1);
+  }
+  .admin-table tr td:last-child {
+    border-right: 1px solid rgba(0, 194, 255, 0.1);
+  }
+  .btn-action-admin {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border: 1px solid rgba(0, 194, 255, 0.3);
+    background: transparent;
+    color: #00C2FF;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-action-admin:hover {
+    background: rgba(0, 194, 255, 0.12);
+    border-color: #00C2FF;
+  }
+  .btn-action-admin.danger {
+    border-color: rgba(255, 45, 85, 0.4);
+    color: #FF2D55;
+  }
+  .btn-action-admin.danger:hover {
+    background: rgba(255, 45, 85, 0.12);
+    border-color: #FF2D55;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="container py-4">
+
+  <!-- ── HEADER ── -->
+  <div class="admin-header-cyber">
+    <div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(0,194,255,0.5);letter-spacing:0.15em;margin-bottom:0.4rem;">
+        SYSTEM // ROOT PRIVILEGES GRANTED
+      </div>
+      <h2 style="font-family:'Orbitron',monospace;font-size:1.15rem;font-weight:700;color:#00C2FF;letter-spacing:0.08em;margin:0;">
+        <i class="bi bi-shield-lock-fill me-2"></i>ADMINISTRATION CONSOLE
+      </h2>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;padding:4px 12px;border:1px solid rgba(34,197,94,0.4);color:#22C55E;background:rgba(34,197,94,0.08);">
+        <i class="bi bi-check-circle-fill me-1"></i>ADMIN AUTHENTICATED
+      </span>
+    </div>
+  </div>
+
+  <!-- ── STATS ROW ── -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+      <div class="admin-card">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(0,194,255,0.6);letter-spacing:0.1em;margin-bottom:6px;">TOTAL REGISTERED AGENTS</div>
+        <div style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:700;color:#00C2FF;">{{ total_users }}</div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="admin-card">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(34,197,94,0.6);letter-spacing:0.1em;margin-bottom:6px;">TOTAL BLOCKS MINED</div>
+        <div style="font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:700;color:#22C55E;">{{ total_blocks }}</div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="admin-card">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(189,0,255,0.6);letter-spacing:0.1em;margin-bottom:6px;">SECURITY PROTOCOL</div>
+        <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:700;color:#BD00FF;line-height:1.45;">RSA-OAEP 2048</div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+      <div class="admin-card">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(255,179,0,0.6);letter-spacing:0.1em;margin-bottom:6px;">STORAGE ENGINE</div>
+        <div style="font-family:'Orbitron',monospace;font-size:1.1rem;font-weight:700;color:#FFB300;line-height:1.45;">IPFS + LEDGER</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── USER MANAGEMENT ── -->
+  <div class="admin-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+      <h5 style="font-family:'Orbitron',monospace;font-size:0.85rem;color:#00C2FF;letter-spacing:0.08em;margin:0;">
+        <i class="bi bi-people-fill me-2"></i>USER REGISTRY &amp; PRIVILEGES
+      </h5>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:rgba(0,194,255,0.5);">
+        {{ users|length }} records
+      </span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Created</th>
+            <th style="text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr id="user-row-{{ u.id }}">
+            <td style="color:#00C2FF;">#{{ u.id }}</td>
+            <td><strong>{{ u.full_name }}</strong></td>
+            <td><span style="color:#00FF41;">@{{ u.username }}</span></td>
+            <td style="color:rgba(226,232,240,0.7);">{{ u.email }}</td>
+            <td>
+              {% if u.is_admin %}
+                <span style="padding:2px 8px;border:1px solid rgba(189,0,255,0.4);color:#BD00FF;background:rgba(189,0,255,0.08);font-size:0.7rem;">ADMIN</span>
+              {% else %}
+                <span style="padding:2px 8px;border:1px solid rgba(0,194,255,0.25);color:rgba(0,194,255,0.7);background:rgba(0,194,255,0.04);font-size:0.7rem;">USER</span>
+              {% endif %}
+            </td>
+            <td style="color:rgba(226,232,240,0.5);font-size:0.72rem;">{{ u.created_at }}</td>
+            <td style="text-align:right;">
+              <button class="btn-action-admin me-1" onclick="toggleAdmin({{ u.id }})">
+                <i class="bi bi-person-gear me-1"></i>Toggle Role
+              </button>
+              <button class="btn-action-admin danger" onclick="deleteUser({{ u.id }}, '{{ u.username }}')">
+                <i class="bi bi-trash-fill me-1"></i>Delete
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function toggleAdmin(userId) {
+  if (!confirm("Are you sure you want to toggle admin permissions for this user?")) return;
+  try {
+    const res = await fetch(`/admin/toggle_admin/${userId}`, { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) {
+      if (window.showToast) window.showToast("User role updated successfully!", "success");
+      setTimeout(() => location.reload(), 800);
+    } else {
+      alert(data.error || "Failed to update role");
+    }
+  } catch(e) {
+    alert("Network error: " + e.message);
+  }
+}
+
+async function deleteUser(userId, username) {
+  if (!confirm(`Are you sure you want to PERMANENTLY delete user @${username}?`)) return;
+  try {
+    const res = await fetch(`/admin/delete_user/${userId}`, { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) {
+      const row = document.getElementById(`user-row-${userId}`);
+      if (row) row.remove();
+      if (window.showToast) window.showToast(`User @${username} deleted.`, "info");
+    } else {
+      alert(data.error || "Failed to delete user");
+    }
+  } catch(e) {
+    alert("Network error: " + e.message);
+  }
+}
+</script>
+{% endblock %}
+

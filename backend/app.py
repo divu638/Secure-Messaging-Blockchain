@@ -55,14 +55,15 @@ from blockchain.signatures import verify_rsa_signature
 from blockchain.ipfs_pinata import upload_to_ipfs, fetch_from_ipfs, get_ipfs_gateway_url
 
 # ── Detect database mode ──────────────────────────────────────────────────────
-USE_POSTGRES = bool(Config.DATABASE_URL)
-
-if USE_POSTGRES:
+import sqlite3
+try:
     import psycopg2
     import psycopg2.extras
     import psycopg2.errors
-else:
-    import sqlite3
+except ImportError:
+    psycopg2 = None
+
+USE_POSTGRES = bool(Config.DATABASE_URL and psycopg2 is not None)
 
 # ── Resolve paths relative to backend/ ───────────────────────────────────────
 _root_dir     = os.path.abspath(os.path.join(_backend_dir, ".."))
@@ -112,13 +113,22 @@ google = oauth.register(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def get_db():
+    global USE_POSTGRES
     if "db" not in g:
-        if USE_POSTGRES:
-            g.db = psycopg2.connect(
-                Config.DATABASE_URL,
-                cursor_factory=psycopg2.extras.RealDictCursor,
-                connect_timeout=15,
-            )
+        if USE_POSTGRES and psycopg2:
+            try:
+                g.db = psycopg2.connect(
+                    Config.DATABASE_URL,
+                    cursor_factory=psycopg2.extras.RealDictCursor,
+                    connect_timeout=5,
+                )
+            except Exception as e:
+                app.logger.warning(f"PostgreSQL connection failed ({e}). Falling back to local SQLite.")
+                USE_POSTGRES = False
+                db_dir = os.path.dirname(Config.SQLITE_PATH)
+                os.makedirs(db_dir, exist_ok=True)
+                g.db = sqlite3.connect(Config.SQLITE_PATH)
+                g.db.row_factory = sqlite3.Row
         else:
             db_dir = os.path.dirname(Config.SQLITE_PATH)
             os.makedirs(db_dir, exist_ok=True)
@@ -344,6 +354,7 @@ def _migrate_db():
             for col, sql in [
                 ("digital_signature", "ALTER TABLE blockchain ADD COLUMN digital_signature TEXT"),
                 ("sig_valid",         "ALTER TABLE blockchain ADD COLUMN sig_valid INTEGER"),
+                ("sender_encrypted",  "ALTER TABLE blockchain ADD COLUMN sender_encrypted TEXT"),
             ]:
                 if col not in block_cols:
                     db.execute(sql)

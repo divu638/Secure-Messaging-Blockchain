@@ -12,3 +12,5 @@ pyotp==2.9.0          # Two-Factor Authentication (TOTP)
 qrcode[pil]==7.4.2    # QR code generation for 2FA setup
 Flask-Limiter==3.5.0  # Rate limiting
 PyJWT==2.8.0          # JWT token authentication
+cryptography>=42.0.0   # RSA & Digital Signatures
+simple-websocket>=1.1.0 # Production WebSocket support for Flask-SocketIO

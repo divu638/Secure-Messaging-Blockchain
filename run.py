@@ -21,4 +21,6 @@ from config import Config
 if __name__ == "__main__":
     with app.app_context():
         init_db()
-    socketio.run(app, debug=Config.DEBUG, allow_unsafe_werkzeug=True)
+    port = int(os.environ.get("PORT", 5000))
+    print(f"[*] Starting Secure Messaging Blockchain System on http://127.0.0.1:{port}")
+    socketio.run(app, host="127.0.0.1", port=port, debug=Config.DEBUG, allow_unsafe_werkzeug=True)

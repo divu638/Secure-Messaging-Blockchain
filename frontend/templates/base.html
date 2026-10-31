@@ -164,6 +164,11 @@
         <li><a href="{{ url_for('blockchain_ledger') }}" class="{% if request.endpoint == 'blockchain_ledger' %}nav-link-active{% endif %}">
           <i class="bi bi-link-45deg" style="font-size:0.9rem;"></i> Ledger
         </a></li>
+        {% if session.get('is_admin') %}
+        <li><a href="{{ url_for('admin_panel') }}" class="{% if request.endpoint == 'admin_panel' %}nav-link-active{% endif %}">
+          <i class="bi bi-shield-shaded" style="font-size:0.85rem;color:#BD00FF;"></i> Admin
+        </a></li>
+        {% endif %}
         {% endif %}
       </ul>
 
