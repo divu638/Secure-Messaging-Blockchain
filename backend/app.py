@@ -147,6 +147,14 @@ def close_db(exception=None):
         db.close()
 
 
+@app.after_request
+def add_performance_headers(response):
+    """Speed up subsequent page loads with browser caching for static assets."""
+    if request.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "public, max-age=86400, stale-while-revalidate=3600"
+    return response
+
+
 def db_execute(query, params=(), fetchone=False, fetchall=False, commit=False):
     db = get_db()
     if USE_POSTGRES:
