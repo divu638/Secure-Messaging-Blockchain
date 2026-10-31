@@ -215,3 +215,4 @@ This repository includes a pre-configured `render.yaml` and `Procfile`.
 
 ## 📄 License
 This project is open-source under the [MIT License](LICENSE).
+
