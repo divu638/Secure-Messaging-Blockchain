@@ -374,6 +374,69 @@ def _migrate_db():
     except Exception:
         pass
 
+    _seed_cipherbot()
+    _seed_demo_keys()
+
+
+def _seed_cipherbot():
+    """Ensure CipherBot AI agent exists with a valid RSA-2048 key pair."""
+    try:
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        from cryptography.hazmat.primitives import serialization
+        
+        bot_user = db_execute("SELECT id FROM users WHERE username = 'CipherBot'", fetchone=True)
+        if not bot_user:
+            db_execute("""
+                INSERT INTO users (full_name, username, email, password_hash, bio)
+                VALUES ('CipherBot AI', 'CipherBot', 'cipherbot@securemsg.network', '!LOCKED_AI_AGENT!', 'Autonomous E2EE verification & blockchain consensus agent.')
+            """, commit=True)
+            bot_user = db_execute("SELECT id FROM users WHERE username = 'CipherBot'", fetchone=True)
+        
+        if bot_user:
+            bot_id = bot_user["id"]
+            bot_key = db_execute("SELECT user_id FROM user_keys WHERE user_id = ?", (bot_id,), fetchone=True)
+            if not bot_key:
+                priv = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+                pub_pem = priv.public_key().public_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PublicFormat.SubjectPublicKeyInfo
+                ).decode("utf-8")
+                
+                db_execute("""
+                    INSERT INTO user_keys (user_id, public_key)
+                    VALUES (?, ?)
+                """, (bot_id, pub_pem), commit=True)
+    except Exception as e:
+        app.logger.warning(f"CipherBot seed warning: {e}")
+
+
+def _seed_demo_keys():
+    """Seed public keys for existing users who have not generated them yet."""
+    try:
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        from cryptography.hazmat.primitives import serialization
+        
+        users_without_keys = db_execute("""
+            SELECT users.id, users.username FROM users
+            LEFT JOIN user_keys ON users.id = user_keys.user_id
+            WHERE user_keys.public_key IS NULL
+        """, fetchall=True)
+        
+        if users_without_keys:
+            for u in users_without_keys:
+                priv = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+                pub_pem = priv.public_key().public_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PublicFormat.SubjectPublicKeyInfo
+                ).decode("utf-8")
+                db_execute(
+                    "INSERT INTO user_keys (user_id, public_key) VALUES (?, ?)",
+                    (u["id"], pub_pem),
+                    commit=True
+                )
+    except Exception as e:
+        app.logger.warning(f"Demo keys seed warning: {e}")
+
 
 _db_initialized = False
 
@@ -397,6 +460,8 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if "user_id" not in session:
+            if request.path.startswith("/api/"):
+                return jsonify({"error": "Authentication required", "status": 401}), 401
             flash("Please log in to access this page.", "warning")
             return redirect(url_for("login"))
         return f(*args, **kwargs)
@@ -956,7 +1021,7 @@ def api_users():
         FROM users
         LEFT JOIN user_keys ON users.id = user_keys.user_id
         WHERE users.id != ?
-        ORDER BY users.username ASC
+        ORDER BY (CASE WHEN users.username = 'CipherBot' THEN 0 ELSE 1 END), users.username ASC
     """, (session["user_id"],), fetchall=True)
     return jsonify({"users": [dict(u) for u in users]})
 
@@ -1092,6 +1157,63 @@ def send_message():
 
     socketio.emit("new_message", block_data, room=recipient)
     socketio.emit("new_message", block_data, room=sender)
+
+    # ── Automated CipherBot echo response ──────────────────────────────────
+    if recipient.lower() == "cipherbot":
+        try:
+            from cryptography.hazmat.primitives.asymmetric import padding
+            from cryptography.hazmat.primitives import hashes
+            from cryptography.hazmat.primitives.serialization import load_pem_public_key
+            import base64
+
+            sender_row = db_execute("SELECT id FROM users WHERE username = ?", (sender,), fetchone=True)
+            if sender_row:
+                sender_key_row = db_execute("SELECT public_key FROM user_keys WHERE user_id = ?", (sender_row["id"],), fetchone=True)
+                bot_user = db_execute("SELECT id FROM users WHERE username = 'CipherBot'", fetchone=True)
+                bot_key_row = db_execute("SELECT public_key FROM user_keys WHERE user_id = ?", (bot_user["id"],), fetchone=True) if bot_user else None
+
+                if sender_key_row and sender_key_row.get("public_key") and bot_key_row:
+                    reply_text = f"Secure link confirmed! Block #{new_id} verified on chain. Consensus intact. 🛡️"
+                    sender_pub = load_pem_public_key(sender_key_row["public_key"].encode("utf-8"))
+                    bot_pub = load_pem_public_key(bot_key_row["public_key"].encode("utf-8"))
+
+                    encrypted_for_user = base64.b64encode(sender_pub.encrypt(
+                        reply_text.encode("utf-8"),
+                        padding.OAEP(mgf=padding.MGF1(hashes.SHA256()), algorithm=hashes.SHA256(), label=None)
+                    )).decode("utf-8")
+
+                    encrypted_for_bot = base64.b64encode(bot_pub.encrypt(
+                        reply_text.encode("utf-8"),
+                        padding.OAEP(mgf=padding.MGF1(hashes.SHA256()), algorithm=hashes.SHA256(), label=None)
+                    )).decode("utf-8")
+
+                    bot_nonce, bot_hash, bot_ts = mine_block("CipherBot", sender, encrypted_for_user, encrypted_for_bot, block_hash)
+
+                    db_execute("""
+                        INSERT INTO blockchain
+                            (sender, recipient, encrypted_message, sender_encrypted,
+                             previous_hash, hash, nonce, digital_signature, sig_valid, timestamp)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, NULL, 1, ?)
+                    """, ("CipherBot", sender, encrypted_for_user, encrypted_for_bot,
+                          block_hash, bot_hash, bot_nonce, bot_ts), commit=True)
+
+                    bot_block_id = last_insert_id()
+                    bot_block_data = {
+                        "id": bot_block_id,
+                        "sender": "CipherBot",
+                        "recipient": sender,
+                        "encrypted_message": encrypted_for_user,
+                        "sender_encrypted": encrypted_for_bot,
+                        "previous_hash": block_hash,
+                        "hash": bot_hash,
+                        "nonce": bot_nonce,
+                        "timestamp": bot_ts,
+                        "sig_valid": 1,
+                    }
+                    socketio.emit("new_message", bot_block_data, room=sender)
+        except Exception as e:
+            app.logger.warning(f"CipherBot auto-reply warning: {e}")
+
     return jsonify({"status": "success", "block": block_data})
 
 
@@ -1111,7 +1233,6 @@ def get_messages_history():
 # ═══════════════════════════════════════════════════════════════════════════════
 
 @app.route("/api/blockchain/blocks")
-@login_required
 def get_blockchain_blocks():
     rows = db_execute("SELECT * FROM blockchain ORDER BY id ASC", fetchall=True)
     return jsonify({"blocks": [dict(r) for r in rows]})

@@ -251,7 +251,8 @@ async function vaultDecrypt(pin, blob) {
 // Promise-based modal PIN prompt helper
 function waitForVaultSetupPin() {
     return new Promise((resolve, reject) => {
-        const modal      = new bootstrap.Modal(document.getElementById('setupVaultModal'));
+        const modalEl    = document.getElementById('setupVaultModal');
+        const modal      = bootstrap.Modal.getOrCreateInstance(modalEl);
         const confirmBtn = document.getElementById('confirm-vault-setup-btn');
         const cancelBtn  = document.getElementById('cancel-vault-setup-btn');
         const pinInput   = document.getElementById('vault-pin-input');
@@ -280,7 +281,7 @@ function waitForVaultSetupPin() {
         if (cancelBtn) cancelBtn.addEventListener('click', onCancel);
         pinInput.addEventListener('keydown', onEnter);
         // Focus input after modal animates in
-        document.getElementById('setupVaultModal').addEventListener('shown.bs.modal', () => pinInput.focus(), { once: true });
+        modalEl.addEventListener('shown.bs.modal', () => pinInput.focus(), { once: true });
     });
 }
 
@@ -351,13 +352,20 @@ async function initDashboard() {
 // Unlock vault from server-side encrypted backup
 async function unlockVaultFromServer(username, vaultData) {
     return new Promise((resolve) => {
-        const modal      = new bootstrap.Modal(document.getElementById('unlockVaultModal'));
+        const modalEl    = document.getElementById('unlockVaultModal');
+        const modal      = bootstrap.Modal.getOrCreateInstance(modalEl);
         const confirmBtn = document.getElementById('confirm-vault-unlock-btn');
+        const cancelBtn  = document.getElementById('cancel-vault-unlock-btn');
         const pinInput   = document.getElementById('vault-unlock-pin-input');
         const errEl      = document.getElementById('unlock-error');
         pinInput.value = '';
         if (errEl) errEl.style.display = 'none';
         modal.show();
+
+        const onDismiss = () => {
+            cleanup();
+            resolve();
+        };
 
         const tryUnlock = async () => {
             const pin = pinInput.value.trim();
@@ -382,9 +390,9 @@ async function unlockVaultFromServer(username, vaultData) {
                 if (signPrivJWK) localStorage.setItem(`secure_msg_sign_priv_${username}`, signPrivJWK);
 
                 updateKeyUIStatus(true);
+                cleanup();
                 modal.hide();
                 if (window.showToast) window.showToast('🔓 Vault unlocked — keys restored successfully!', 'success');
-                cleanup();
                 resolve();
             } catch (err) {
                 console.error("Vault decrypt failed:", err);
@@ -396,11 +404,15 @@ async function unlockVaultFromServer(username, vaultData) {
 
         const onEnter = (e) => { if (e.key === 'Enter') tryUnlock(); };
         confirmBtn.addEventListener('click', tryUnlock);
+        if (cancelBtn) cancelBtn.addEventListener('click', onDismiss);
+        modalEl.addEventListener('hidden.bs.modal', onDismiss, { once: true });
         pinInput.addEventListener('keydown', onEnter);
-        document.getElementById('unlockVaultModal').addEventListener('shown.bs.modal', () => pinInput.focus(), { once: true });
+        modalEl.addEventListener('shown.bs.modal', () => pinInput.focus(), { once: true });
 
         function cleanup() {
             confirmBtn.removeEventListener('click', tryUnlock);
+            if (cancelBtn) cancelBtn.removeEventListener('click', onDismiss);
+            modalEl.removeEventListener('hidden.bs.modal', onDismiss);
             pinInput.removeEventListener('keydown', onEnter);
         }
     });
@@ -411,6 +423,11 @@ function updateKeyUIStatus(hasKeys) {
     const initializeBtn = document.getElementById("initialize-keys-btn");
     const pubkeyBox = document.getElementById("pubkey-box");
     const privkeyBox = document.getElementById("privkey-box");
+    const missingBanner = document.getElementById("key-missing-alert-banner");
+
+    if (missingBanner) {
+        missingBanner.style.display = hasKeys ? "none" : "flex";
+    }
 
     // Guard: if badge doesn't exist on this page, skip silently
     if (!badge) return;
@@ -564,19 +581,31 @@ async function selectRecipient(username, hasKey) {
     if (!hasKey) {
         activeRecipientPublicKey = null;
         windowContainer.innerHTML = `
-            <div class="chat-window-header">
+            <div class="chat-window-header" style="display:flex; justify-content:space-between; align-items:center;">
                 <span class="fw-bold text-light">@${username}</span>
+                <span class="badge bg-warning-subtle text-warning border border-warning px-2 py-1 small">KEYS NOT INITIALIZED</span>
             </div>
-            <div class="chat-messages align-items-center justify-content-center text-center text-muted">
-                <i class="bi bi-shield-slash display-4 mb-3 text-danger" style="opacity: 0.5;"></i>
-                <h6 class="text-light">Secure Connection Unavailable</h6>
-                <p class="small" style="max-width: 320px;">
-                    This contact has not initialized their RSA public keys yet. End-to-end encryption cannot be established.
+            <div class="chat-messages align-items-center justify-content-center text-center text-muted" style="padding: 2.5rem 1rem;">
+                <i class="bi bi-shield-slash display-4 mb-3 text-warning" style="opacity: 0.7;"></i>
+                <h5 class="text-light mb-2">Secure Channel Waiting For Keys</h5>
+                <p class="small text-muted mb-4" style="max-width: 380px; line-height: 1.6;">
+                    Contact <strong>@${username}</strong> has not generated their RSA encryption keys yet. In true end-to-end encryption, both parties must have public keys on file.
                 </p>
+                <div style="background:rgba(0,194,255,0.06); border:1px solid rgba(0,194,255,0.2); padding:1rem; border-radius:8px; max-width:380px;">
+                    <div style="font-size:0.8rem; color:#00C2FF; font-weight:600; margin-bottom:0.4rem;">
+                        <i class="bi bi-robot me-1"></i>Want to test live E2EE chat right now?
+                    </div>
+                    <p style="font-size:0.75rem; color:rgba(255,255,255,0.7); margin-bottom:0.75rem;">
+                        Chat with <strong>@CipherBot</strong> — our verified autonomous consensus agent with active RSA-2048 keys!
+                    </p>
+                    <button class="btn btn-sm btn-outline-info" onclick="selectRecipient('CipherBot', 1)" style="font-size:0.75rem;">
+                        <i class="bi bi-chat-dots-fill me-1"></i>Open @CipherBot Channel
+                    </button>
+                </div>
             </div>
             <div class="chat-input-area" style="opacity: 0.5; pointer-events: none;">
                 <div class="chat-input-group">
-                    <input type="text" class="form-control form-control-cyber" placeholder="Messaging locked..." disabled>
+                    <input type="text" class="form-control form-control-cyber" placeholder="Messaging locked until contact initializes keys..." disabled>
                     <button class="btn btn-cyber-primary" disabled><i class="bi bi-send-fill"></i></button>
                 </div>
             </div>

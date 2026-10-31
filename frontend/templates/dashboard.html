@@ -42,11 +42,30 @@
           STATUS: ONLINE
         </div>
         <div style="font-family:'Share Tech Mono',monospace;font-size:0.68rem;color:rgba(0,255,65,0.35);" id="live-clock">--</div>
-        <span id="key-status-badge" style="font-family:'Share Tech Mono',monospace;font-size:0.72rem;padding:4px 12px;border:1px solid rgba(255,45,85,0.4);color:#ff2d55;background:rgba(255,45,85,0.06);letter-spacing:0.08em;">
-          <i class="bi bi-shield-slash-fill me-1"></i>KEYS MISSING
-        </span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span id="key-status-badge" style="font-family:'Share Tech Mono',monospace;font-size:0.72rem;padding:4px 12px;border:1px solid rgba(255,45,85,0.4);color:#ff2d55;background:rgba(255,45,85,0.06);letter-spacing:0.08em;">
+            <i class="bi bi-shield-slash-fill me-1"></i>KEYS MISSING
+          </span>
+          <button id="initialize-keys-btn" class="cyber-btn-outline" style="font-size:0.7rem;padding:4px 12px;cursor:pointer;">
+            <i class="bi bi-key-fill me-1"></i>INITIALIZE RSA
+          </button>
+        </div>
       </div>
     </div>
+  </div>
+
+  <!-- ── KEY SETUP BANNER (auto-hides when keys are active) ── -->
+  <div id="key-missing-alert-banner" style="display:none;background:rgba(189,0,255,0.08);border:1px solid rgba(189,0,255,0.4);padding:0.9rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <i class="bi bi-shield-lock-fill" style="color:#BD00FF;font-size:1.3rem;"></i>
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:0.78rem;color:#BD00FF;font-weight:700;letter-spacing:0.08em;">ENCRYPTION VAULT NOT INITIALIZED</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:rgba(220,200,255,0.7);">Generate your RSA-2048 keys with a 6-digit PIN to enable E2EE chat and blockchain transaction mining.</div>
+      </div>
+    </div>
+    <button onclick="handleInitializeKeys()" class="cyber-btn-outline" style="font-size:0.72rem;padding:6px 16px;border-color:#BD00FF;color:#BD00FF;background:rgba(189,0,255,0.1);cursor:pointer;">
+      <i class="bi bi-gear-fill me-1"></i>SETUP VAULT PIN NOW
+    </button>
   </div>
 
   <!-- ── QUICK STATS ── -->
