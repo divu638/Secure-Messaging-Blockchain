@@ -25,6 +25,14 @@ Features:
 
 import os
 import sys
+
+# ── Ensure backend and workspace root directories are in sys.path ─────────────
+_backend_dir = os.path.abspath(os.path.dirname(__file__))
+_root_dir    = os.path.abspath(os.path.join(_backend_dir, ".."))
+for _p in (_backend_dir, _root_dir):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
 import hashlib
 import time
 import base64
@@ -42,17 +50,24 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import jwt as pyjwt
 
-from config import Config
+# ── Local imports with fallbacks for IDE / direct execution ───────────────────
+try:
+    from config import Config
+except ImportError:
+    from backend.config import Config
 
-# ── Add backend sub-packages to path ─────────────────────────────────────────
-_backend_dir = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, _backend_dir)
-
-from auth.two_fa      import generate_totp_secret, get_totp_uri, generate_qr_base64, verify_totp
-from auth.jwt_helper  import generate_tokens, decode_token
-from blockchain.merkle     import MerkleTree, compute_chain_merkle_root, get_block_proof
-from blockchain.signatures import verify_rsa_signature
-from blockchain.ipfs_pinata import upload_to_ipfs, fetch_from_ipfs, get_ipfs_gateway_url
+try:
+    from auth.two_fa      import generate_totp_secret, get_totp_uri, generate_qr_base64, verify_totp
+    from auth.jwt_helper  import generate_tokens, decode_token
+    from blockchain.merkle     import MerkleTree, compute_chain_merkle_root, get_block_proof
+    from blockchain.signatures import verify_rsa_signature
+    from blockchain.ipfs_pinata import upload_to_ipfs, fetch_from_ipfs, get_ipfs_gateway_url
+except ImportError:
+    from backend.auth.two_fa      import generate_totp_secret, get_totp_uri, generate_qr_base64, verify_totp
+    from backend.auth.jwt_helper  import generate_tokens, decode_token
+    from backend.blockchain.merkle     import MerkleTree, compute_chain_merkle_root, get_block_proof
+    from backend.blockchain.signatures import verify_rsa_signature
+    from backend.blockchain.ipfs_pinata import upload_to_ipfs, fetch_from_ipfs, get_ipfs_gateway_url
 
 # ── Detect database mode ──────────────────────────────────────────────────────
 import sqlite3
@@ -198,14 +213,19 @@ def last_insert_id():
             cur = db.cursor()
             cur.execute("SELECT lastval()")
             row = cur.fetchone()
-            return list(row.values())[0] if row else None
+            if row:
+                return list(row.values())[0] if hasattr(row, "values") else row[0]
+            return None
         except Exception:
             cur = db.cursor()
             cur.execute("SELECT MAX(id) FROM blockchain")
             row = cur.fetchone()
-            return list(row.values())[0] if row else None
+            if row:
+                return list(row.values())[0] if hasattr(row, "values") else row[0]
+            return None
     else:
-        return db.execute("SELECT last_insert_rowid()").fetchone()[0]
+        row = db.execute("SELECT last_insert_rowid()").fetchone()
+        return row[0] if row else None
 
 
 def init_db():
